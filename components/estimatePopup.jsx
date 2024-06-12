@@ -65,7 +65,7 @@ export default function EstimatePopup({ estimate }) {
         newWindow.document.write(htmlContent);
         newWindow.print();
         newWindow.close();
-      };
+    };
 
     const acceptestimate = async () => {
         try {
@@ -74,7 +74,7 @@ export default function EstimatePopup({ estimate }) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ SyncToken: estimate.SyncToken, Id: estimate.Id}),
+                body: JSON.stringify({ SyncToken: estimate.SyncToken, Id: estimate.Id }),
             });
             const data = await response.json();
             // openHtmlInNewTab(html)
@@ -83,12 +83,12 @@ export default function EstimatePopup({ estimate }) {
         }
     }
 
-      // Filter estimate
+    // Filter estimate
 
     return (
         <>
             {estimate.TxnStatus === 'Pending' && 
-                <Dialog key={estimate.DocNumber}>
+            <Dialog key={estimate.DocNumber}>
                 <DialogTrigger asChild>
                     <TableRow>
                         <TableCell className="font-medium">{estimate.DocNumber}</TableCell>
@@ -97,7 +97,7 @@ export default function EstimatePopup({ estimate }) {
                             {estimate.MetaData.CreateTime.split('T')[0]}
                         </TableCell>
                         <TableCell className="text-right">
-                            <Switch 
+                            <Switch
                                 onCheckedChange={acceptestimate}
                                 onClick={(e) => e.stopPropagation()} />
                         </TableCell>
@@ -129,8 +129,8 @@ export default function EstimatePopup({ estimate }) {
                                 className="col-span-3"
                             />
                         </div>
-    
-    
+
+
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="model" className="text-right">
                                 Model
@@ -142,7 +142,7 @@ export default function EstimatePopup({ estimate }) {
                                 className="col-span-3"
                             />
                         </div>
-    
+
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="serial" className="text-right">
                                 Serial Number
@@ -187,7 +187,7 @@ export default function EstimatePopup({ estimate }) {
                             </RadioGroup>
                         </div>
                     </div>
-    
+
                     <Table>
                         <TableHeader>
                             <TableRow>
