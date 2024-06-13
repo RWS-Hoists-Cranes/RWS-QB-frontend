@@ -22,18 +22,37 @@ import OrderPopup from "@/components/orderPopup"
 
 
 export default function Estimate() {
-    const [estimates, setEstimates] = useState([])
+    const [estimates, setEstimates] = useState([]);
+    const [orders, setOrders] = useState([]);
+    const [reload, setReload] = useState(false);
 
     useEffect(() => {
-        async function getData() {
+        async function getEstimates() {
             const response = await fetch('http://localhost:8080/api/estimates');
 
             const data = await response.json();
             setEstimates(data.QueryResponse.Estimate);
         };
 
-        getData();
-    }, [])
+        getEstimates();
+    }, [reload]);
+
+    useEffect(() => {
+        async function getOrders() {
+            const response = await fetch('http://localhost:8080/api/orders');
+
+            const data = await response.json();
+            console.log(data);
+            setOrders(data);
+        };
+
+        getOrders();
+    }, [reload]);
+
+
+    const handleTabClick = () => {
+        setReload(!reload);
+    };
 
     return (
         <>
@@ -42,9 +61,9 @@ export default function Estimate() {
             </div>
             <Tabs defaultValue="quotes">
                 <TabsList className="grid w-1/3 mx-auto grid-cols-3 my-4">
-                    <TabsTrigger value="quotes">Quotes</TabsTrigger>
-                    <TabsTrigger value="order_form">Order Form</TabsTrigger>
-                    <TabsTrigger value="invoice">Invoice</TabsTrigger>
+                    <TabsTrigger value="quotes" onClick={handleTabClick}>Quotes</TabsTrigger>
+                    <TabsTrigger value="order_form" onClick={handleTabClick}>Order Form</TabsTrigger>
+                    <TabsTrigger value="invoice" onClick={handleTabClick}>Invoice</TabsTrigger>
                 </TabsList>
                 <TabsContent value="quotes">
                     <Card className="w-3/4 mx-auto">
@@ -79,7 +98,9 @@ export default function Estimate() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                <OrderPopup/>
+                                {orders.map((order, index) => (
+                                    <OrderPopup order={order} key={index} />
+                                ))}
                             </TableBody>
 
                         </Table>

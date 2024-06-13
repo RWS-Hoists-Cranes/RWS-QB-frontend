@@ -77,7 +77,6 @@ export default function EstimatePopup({ estimate }) {
 
     const fetchHtmlContent = async () => {
         try {
-            console.log("FOB IS", fob);
             const response = await fetch('http://localhost:8080/api/generateHTML', {
                 method: 'POST',
                 headers: {
@@ -133,7 +132,6 @@ export default function EstimatePopup({ estimate }) {
                 setModel(data.model);
                 setTerm(data.term);
                 setFob(data.fob);
-                console.log(data.term, data.fob)
             }
         } catch (error) {
             console.error('Error fetching estimate:', error);

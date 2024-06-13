@@ -59,32 +59,62 @@ const frameworks = [
     }
 ]
 
-export default function OrderPopup() {
-    const [orderNo, setOrderNo] = useState();
-    const [po, setPo] = useState();
-    const [shipVia, setShipVia] = useState('');
-    const [billingType, setBillingType] = useState();
-    const [notes, setNotes] = useState();
+export default function OrderPopup({ order }) {
+    const [orderNumber, setOrderNumber] = useState(order.order_number);
+    const [customerPO, setCustomerPO] = useState(order.customer_PO);
+    const [shippingMethod, setShippingMethod] = useState(order.shipping_method);
+    const [billingType, setBillingType] = useState(order.billing_type);
+    const [comments, setComments] = useState(order.comments);
+    const [quotationNumber, setQuotationNumber] = useState(order.quotation_number);
+    const [dateOrdered, setDateOrdered] = useState(order.date_ordered);
 
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState("")
 
+    async function updateDatabase() {
+        try {
+            const response = await fetch('http://localhost:8080/api/order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    order_number: orderNumber,
+                    quotation_number: quotationNumber,
+                    shipping_method: shippingMethod,
+                    customer_PO: customerPO,
+                    comments: comments,
+                    billing_type: billingType,
+                }),
+            });
 
-    async function fetchHtmlContent() {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
 
+            const data = await response.json();
+            console.log('Order updated:', data);
+        } catch (error) {
+            console.error('Error updating order:', error);
+        }
+    }
+
+
+    async function displayOrderHTML() {
+        updateDatabase();
     }
 
     return (
         <Dialog key={1}>
             <DialogTrigger asChild>
                 <TableRow>
-                    <TableCell className="font-medium">115A8426</TableCell>
-                    <TableCell className="">DAVID112818</TableCell>
+                    <TableCell className="font-medium">{orderNumber}</TableCell>
+                    <TableCell className="">{customerPO}</TableCell>
                     <TableCell className="">
-                        39930
+                        {quotationNumber}
                     </TableCell>
                     <TableCell className="text-right">
-                        2018-11-28
+                        {dateOrdered.split('T')[0]}
                     </TableCell>
                 </TableRow>
             </DialogTrigger>
@@ -99,8 +129,8 @@ export default function OrderPopup() {
                             RWS Order No.
                         </Label>
                         <Input
-                            value={orderNo}
-                            onChange={(e) => setOrderNo(e.target.value)}
+                            value={orderNumber}
+                            onChange={(e) => setOrderNumber(e.target.value)}
                             className="col-span-3"
                         />
                     </div>
@@ -109,8 +139,8 @@ export default function OrderPopup() {
                             Customer Order No.
                         </Label>
                         <Input
-                            value={po}
-                            onChange={(e) => setPo(e.target.value)}
+                            value={customerPO}
+                            onChange={(e) => setCustomerPO(e.target.value)}
                             className="col-span-3"
                         />
                     </div>
@@ -162,6 +192,27 @@ export default function OrderPopup() {
                             </PopoverContent>
                         </Popover>
                     </div>
+
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="name" className="text-right">
+                            Billing Type
+                        </Label>
+                        <RadioGroup defaultValue={billingType} className="col-span-3 flex justify-between" onValueChange={(value) => { setBillingType(value) }}>
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="PREPAID" id="r1" />
+                                <Label htmlFor="r1">PREPAID</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="COLLECT" id="r2" />
+                                <Label htmlFor="r2">COLLECT</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="PREPAID_CHARGE" id="r3" />
+                                <Label htmlFor="r3">PREPAID & CHARGE</Label>
+                            </div>
+                        </RadioGroup>
+                    </div>
+
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="name" className="text-right">
                             Comments
@@ -169,13 +220,14 @@ export default function OrderPopup() {
                         <Textarea
                             placeholder="Type your message here."
                             className="col-span-3 resize-y overflow-auto"
+                            value={comments}
+                            onChange={(e) => setComments(e.target.value)}
                         />
                     </div>
-
                 </div>
 
                 <DialogFooter>
-                    <Button type="submit" onClick={fetchHtmlContent}>
+                    <Button type="submit" onClick={displayOrderHTML}>
                         Print Page
                     </Button>
                 </DialogFooter>
