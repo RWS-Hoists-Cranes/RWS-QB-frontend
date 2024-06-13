@@ -106,7 +106,7 @@ export default function EstimatePopup({ estimate }) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ SyncToken: estimate.SyncToken, Id: estimate.Id }),
+                body: JSON.stringify({ SyncToken: estimate.SyncToken, Id: estimate.Id, estimateID: estimate.DocNumber }),
             });
             const data = await response.json();
             setShowRow(false);
