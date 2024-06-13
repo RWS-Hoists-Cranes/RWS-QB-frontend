@@ -18,6 +18,7 @@ import {
     TabsList,
     TabsTrigger,
 } from "@/components/ui/tabs"
+import OrderPopup from "@/components/orderPopup"
 
 
 export default function Estimate() {
@@ -72,15 +73,13 @@ export default function Estimate() {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead className="w-[300px]">Order No.</TableHead>
-                                    <TableHead>Customer</TableHead>
-                                    <TableHead>Date Created</TableHead>
-                                    <TableHead className="text-right">Convert to Order Form</TableHead>
+                                    <TableHead>Customer PO</TableHead>
+                                    <TableHead>Quotation Ref.</TableHead>
+                                    <TableHead className="text-right">Date Ordered</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {estimates.map((estimate) => (
-                                    <EstimatePopup estimate={estimate} />
-                                ))}
+                                <OrderPopup/>
                             </TableBody>
 
                         </Table>
