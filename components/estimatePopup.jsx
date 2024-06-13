@@ -35,6 +35,7 @@ export default function EstimatePopup({ estimate }) {
     const [term, setTerm] = useState('net30');
     const [fob, setFob] = useState('scarborough');
     const [itemDelivery, setItemDelivery] = useState({});
+    const [showRow, setShowRow] = useState(true);
 
     // useEffect(() => {
     //     async function getEstimateInfo() {
@@ -108,7 +109,7 @@ export default function EstimatePopup({ estimate }) {
                 body: JSON.stringify({ SyncToken: estimate.SyncToken, Id: estimate.Id }),
             });
             const data = await response.json();
-            // openHtmlInNewTab(html)
+            setShowRow(false);
         } catch (error) {
             console.error('Error accepting estimate:', error);
         }
@@ -144,7 +145,7 @@ export default function EstimatePopup({ estimate }) {
 
     return (
         <>
-            {estimate.TxnStatus === 'Pending' &&
+            {estimate.TxnStatus === 'Pending' && showRow &&
                 <Dialog key={estimate.DocNumber}>
                     <DialogTrigger asChild>
                         <TableRow onClick={populateEstimateInfo}>
