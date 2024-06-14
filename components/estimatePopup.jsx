@@ -17,7 +17,8 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-    DialogFooter
+    DialogFooter,
+    DialogClose
 } from "@/components/ui/dialog"
 import { Label } from "@radix-ui/react-label"
 import { Input } from "./ui/input"
@@ -74,9 +75,25 @@ export default function EstimatePopup({ estimate }) {
         }));
     };
 
+    const saveData = async () => {
+        try {
+            const response = await fetch('http://localhost:8080/api/estimate', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ estimateID: estimate.DocNumber, enquiryRef, product, serial, model, term, itemDelivery, fob }),
+            });
+            console.log("Successfully saved the data");
+        } catch (error) {
+            console.error("Failed to save the data");
+        }
+    }
+
     const fetchHtmlContent = async () => {
         try {
-            const response = await fetch('http://localhost:8080/api/generateHTML', {
+            saveData();
+            const response = await fetch('http://localhost:8080/api/estimateHtml', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -278,9 +295,16 @@ export default function EstimatePopup({ estimate }) {
                             </TableFooter>
                         </Table>
                         <DialogFooter>
-                            <Button type="submit" onClick={fetchHtmlContent}>
-                                Print Page
-                            </Button>
+                            <DialogClose>
+                                <Button variant="outline" onClick={saveData}>
+                                    Save and Close
+                                </Button>
+                            </DialogClose>
+                            <DialogClose>
+                                <Button type="submit" onClick={fetchHtmlContent}>
+                                    Save and Print
+                                </Button>
+                            </DialogClose>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>}
