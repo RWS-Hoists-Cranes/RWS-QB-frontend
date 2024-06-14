@@ -118,7 +118,7 @@ export default function OrderPopup({ order }) {
                     comments,
                     quotationNumber,
                     dateOrdered,
-                  }),
+                }),
             });
             const html = await response.text();
             openHtmlInNewTab(html)
@@ -186,8 +186,8 @@ export default function OrderPopup({ order }) {
                                     aria-expanded={openShipMethod}
                                     className="w-[300px] justify-between"
                                 >
-                                    {value
-                                        ? frameworks.find((framework) => framework.value === value)?.label
+                                    {shippingMethod
+                                        ? frameworks.find((framework) => framework.value === shippingMethod)?.label
                                         : "Select shipping method..."}
                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                 </Button>
@@ -203,14 +203,14 @@ export default function OrderPopup({ order }) {
                                                     key={framework.value}
                                                     value={framework.value}
                                                     onSelect={(currentValue) => {
-                                                        setValue(currentValue === value ? "" : currentValue)
-                                                        setOpenShipMethod(false)
+                                                        setShippingMethod(currentValue === shippingMethod ? "" : currentValue);
+                                                        setOpenShipMethod(false);
                                                     }}
                                                 >
                                                     <Check
                                                         className={cn(
                                                             "mr-2 h-4 w-4",
-                                                            value === framework.value ? "opacity-100" : "opacity-0"
+                                                            shippingMethod === framework.value ? "opacity-100" : "opacity-0"
                                                         )}
                                                     />
                                                     {framework.label}
