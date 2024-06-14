@@ -18,7 +18,8 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-    DialogFooter
+    DialogFooter,
+    DialogClose
 } from "@/components/ui/dialog"
 import { Label } from "@radix-ui/react-label"
 import { Input } from "./ui/input"
@@ -68,7 +69,7 @@ export default function OrderPopup({ order }) {
     const [quotationNumber, setQuotationNumber] = useState(order.quotation_number);
     const [dateOrdered, setDateOrdered] = useState(order.date_ordered);
 
-    const [open, setOpen] = useState(false);
+    const [openShipMethod, setOpenShipMethod] = useState(false);
     const [value, setValue] = useState("")
 
     async function updateDatabase() {
@@ -102,10 +103,39 @@ export default function OrderPopup({ order }) {
 
     async function displayOrderHTML() {
         updateDatabase();
+
+        try {
+            const response = await fetch('http://localhost:8080/api/orderHTML', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    orderNumber,
+                    customerPO,
+                    shippingMethod,
+                    billingType,
+                    comments,
+                    quotationNumber,
+                    dateOrdered,
+                  }),
+            });
+            const html = await response.text();
+            openHtmlInNewTab(html)
+        } catch (error) {
+            console.error('Error fetching HTML:', error);
+        }
     }
 
+    const openHtmlInNewTab = (htmlContent) => {
+        const newWindow = window.open('');
+        newWindow.document.write(htmlContent);
+        newWindow.print();
+        newWindow.close();
+    };
+
     return (
-        <Dialog key={1}>
+        <Dialog key={1} >
             <DialogTrigger asChild>
                 <TableRow>
                     <TableCell className="font-medium">{orderNumber}</TableCell>
@@ -148,12 +178,12 @@ export default function OrderPopup({ order }) {
                         <Label htmlFor="name" className="text-right">
                             Shipping Method
                         </Label>
-                        <Popover open={open} onOpenChange={setOpen}>
+                        <Popover open={openShipMethod} onOpenChange={setOpenShipMethod}>
                             <PopoverTrigger asChild>
                                 <Button
                                     variant="outline"
                                     role="combobox"
-                                    aria-expanded={open}
+                                    aria-expanded={openShipMethod}
                                     className="w-[300px] justify-between"
                                 >
                                     {value
@@ -174,7 +204,7 @@ export default function OrderPopup({ order }) {
                                                     value={framework.value}
                                                     onSelect={(currentValue) => {
                                                         setValue(currentValue === value ? "" : currentValue)
-                                                        setOpen(false)
+                                                        setOpenShipMethod(false)
                                                     }}
                                                 >
                                                     <Check
@@ -227,9 +257,16 @@ export default function OrderPopup({ order }) {
                 </div>
 
                 <DialogFooter>
-                    <Button type="submit" onClick={displayOrderHTML}>
-                        Print Page
-                    </Button>
+                    <DialogClose>
+                        <Button variant="outline" onClick={updateDatabase}>
+                            Save and Close
+                        </Button>
+                    </DialogClose>
+                    <DialogClose>
+                        <Button type="submit" onClick={displayOrderHTML}>
+                            Save and Print
+                        </Button>
+                    </DialogClose>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
