@@ -19,6 +19,7 @@ import {
     TabsTrigger,
 } from "@/components/ui/tabs"
 import OrderPopup from "@/components/orderPopup"
+import InvoicePopup from "@/components/invoicePopup"
 
 
 export default function Estimate() {
@@ -112,6 +113,27 @@ export default function Estimate() {
                             <TableBody>
                                 {orders.map((order, index) => (
                                     <OrderPopup order={order} key={index} />
+                                ))}
+                            </TableBody>
+
+                        </Table>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="invoice">
+                    <Card className="w-3/4 mx-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-[300px]">Invoice No.</TableHead>
+                                    <TableHead>Customer PO</TableHead>
+                                    <TableHead>R.W.S. Job No.</TableHead>
+                                    <TableHead className="text-right">Invoice Date</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {orders.map((order, index) => (
+                                    <InvoicePopup order={order} key={index} />
                                 ))}
                             </TableBody>
 
