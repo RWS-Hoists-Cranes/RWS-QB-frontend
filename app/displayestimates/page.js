@@ -31,7 +31,7 @@ export default function Estimate() {
             const response = await fetch('http://localhost:8080/api/estimates');
 
             const data = await response.json();
-            setEstimates(data.QueryResponse.Estimate);
+            setEstimates(data.QueryResponse.Estimate || []);
         };
 
         getEstimates();
@@ -42,8 +42,7 @@ export default function Estimate() {
             const response = await fetch('http://localhost:8080/api/orders');
 
             const data = await response.json();
-            console.log(data);
-            setOrders(data);
+            setOrders(data || []);
         };
 
         getOrders();
