@@ -33,8 +33,8 @@ export default function EstimatePopup({ estimate }) {
     const [product, setProduct] = useState('');
     const [serial, setSerial] = useState('');
     const [model, setModel] = useState('');
-    const [term, setTerm] = useState('net30');
-    const [fob, setFob] = useState('scarborough');
+    const [term, setTerm] = useState('');
+    const [fob, setFob] = useState('');
     const [itemDelivery, setItemDelivery] = useState({});
     const [showRow, setShowRow] = useState(true);
 
@@ -53,7 +53,7 @@ export default function EstimatePopup({ estimate }) {
 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('Estimate created/updated:', data);
+                    console.log("Save the loaded estimate to the database, in case it does not exist")
                 } else {
                     console.error('Error creating/updating estimate');
                 }
@@ -63,7 +63,8 @@ export default function EstimatePopup({ estimate }) {
         };
 
         postEstimate();
-    }, [estimate]);
+        populateEstimateInfo();
+    }, []);
 
 
 
@@ -148,6 +149,7 @@ export default function EstimatePopup({ estimate }) {
                 setModel(data.model);
                 setTerm(data.term);
                 setFob(data.fob);
+                setItemDelivery(data.itemDelivery);
             }
         } catch (error) {
             console.error('Error fetching estimate:', error);
@@ -162,7 +164,7 @@ export default function EstimatePopup({ estimate }) {
             {estimate.TxnStatus === 'Pending' && showRow &&
                 <Dialog key={estimate.DocNumber}>
                     <DialogTrigger asChild>
-                        <TableRow onClick={populateEstimateInfo}>
+                        <TableRow>
                             <TableCell className="font-medium">{estimate.DocNumber}</TableCell>
                             <TableCell className="">{estimate.CustomerRef.name}</TableCell>
                             <TableCell className="">
