@@ -24,6 +24,7 @@ import OrderPopup from "@/components/orderPopup"
 export default function Estimate() {
     const [estimates, setEstimates] = useState([]);
     const [orders, setOrders] = useState([]);
+    const [invoices, setInvoices] = useState([]);
     const [reload, setReload] = useState(false);
 
     useEffect(() => {
@@ -48,6 +49,18 @@ export default function Estimate() {
         getOrders();
     }, [reload]);
 
+
+
+    useEffect(() => {
+        async function getInvoices() {
+            const response = await fetch('http://localhost:8080/api/invoices');
+
+            const data = await response.json();
+            setInvoices(data || []);
+        };
+
+        getInvoices();
+    }, [reload]);
 
     const handleTabClick = () => {
         setReload(!reload);
