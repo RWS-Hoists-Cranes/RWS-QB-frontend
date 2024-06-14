@@ -37,35 +37,34 @@ export default function EstimatePopup({ estimate }) {
     const [itemDelivery, setItemDelivery] = useState({});
     const [showRow, setShowRow] = useState(true);
 
-    // useEffect(() => {
-    //     async function getEstimateInfo() {
-    //         try {
-    //             const response = await fetch(`http://localhost:8080/api/estimate?quotation_number=${estimate.DocNumber}`, {
-    //                 method: 'GET',
-    //                 headers: {
-    //                     'Content-Type': 'application/json',
-    //                 },
-    //                 cache: 'no-store',
-    //             });
+    useEffect(() => {
+        const quotationNumber = estimate.DocNumber;
 
-    //             if (response.ok) {
-    //                 const data = await response.json();
-    //                 console.log("Success, here is data:", data)
-    //                 setEnquiryRef(data.customer_ref);
-    //                 setProduct(data.product);
-    //                 setSerial(data.serial);
-    //                 setModel(data.model);
-    //                 setTerm(data.term);
-    //                 setFob(data.fob);
-    //                 setItemDelivery(data.quotePartDeliveries);
-    //             }
-    //         } catch (error) {
-    //             console.error('Error fetching estimate:', error);
-    //         }
-    //     }
+        const postEstimate = async () => {
+            try {
+                const response = await fetch('http://localhost:8080/api/estimate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ quotation_number: quotationNumber }),
+                });
 
-    //     getEstimateInfo();
-    // }, [estimate]);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Estimate created/updated:', data);
+                } else {
+                    console.error('Error creating/updating estimate');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        };
+
+        postEstimate();
+    }, [estimate]);
+
+
 
 
     const handleDeliveryChange = (itemName, value) => {
