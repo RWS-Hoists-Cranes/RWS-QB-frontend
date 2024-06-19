@@ -48,7 +48,7 @@ export default function EstimatePopup({ estimate }) {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ quotation_number: quotationNumber }),
+                    body: JSON.stringify({ quotation_number: quotationNumber, quotation_id: estimate.Id }),
                 });
 
                 if (response.ok) {
@@ -83,7 +83,7 @@ export default function EstimatePopup({ estimate }) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ estimateID: estimate.DocNumber, enquiryRef, product, serial, model, term, itemDelivery, fob }),
+                body: JSON.stringify({ estimateID: estimate.DocNumber, enquiryRef, product, serial, model, term, itemDelivery, fob, Id: estimate.Id }),
             });
             console.log("Successfully saved the data");
         } catch (error) {

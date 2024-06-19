@@ -50,6 +50,10 @@ export default function Estimate() {
         getOrders();
     }, [reload]);
 
+    useEffect(() => {
+
+    })
+
 
 
     useEffect(() => {
@@ -57,6 +61,7 @@ export default function Estimate() {
             const response = await fetch('http://localhost:8080/api/invoices');
 
             const data = await response.json();
+            console.log(data);
             setInvoices(data || []);
         };
 
