@@ -38,6 +38,8 @@ export default function EstimatePopup({ estimate }) {
     const [itemDelivery, setItemDelivery] = useState({});
     const [showRow, setShowRow] = useState(true);
 
+    const itemQuantityOrdered = {};
+
     useEffect(() => {
         const quotationNumber = estimate.DocNumber;
 
@@ -83,7 +85,7 @@ export default function EstimatePopup({ estimate }) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ estimateID: estimate.DocNumber, enquiryRef, product, serial, model, term, itemDelivery, fob, Id: estimate.Id }),
+                body: JSON.stringify({ estimateID: estimate.DocNumber, enquiryRef, product, serial, model, term, itemDelivery, fob, Id: estimate.Id, itemQuantityOrdered }),
             });
             console.log("Successfully saved the data");
         } catch (error) {
@@ -271,8 +273,11 @@ export default function EstimatePopup({ estimate }) {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {estimate.Line.slice(0, estimate.Line.length - 1).map((line) => (
+                                {estimate.Line.slice(0, estimate.Line.length - 1).map((line) => {
                                     // <div>{line.SalesItemLineDetail.ItemRef.name}</div>
+                                    itemQuantityOrdered[line.SalesItemLineDetail.ItemRef.name] = line.SalesItemLineDetail.Qty;
+                                    
+                                    return (
                                     <TableRow key={line.Id}>
                                         <TableCell className="font-medium">{line.SalesItemLineDetail.ItemRef.name}</TableCell>
                                         <TableCell className="w-full">{line.Description}</TableCell>
@@ -287,7 +292,7 @@ export default function EstimatePopup({ estimate }) {
                                             />
                                         </TableCell>
                                     </TableRow>
-                                ))}
+                                    )})}
                             </TableBody>
                             <TableFooter>
                                 {/* <TableRow>
