@@ -74,9 +74,6 @@ export default function Estimate() {
 
     return (
         <>
-            <div>
-                Here are all the estimates you have.
-            </div>
             <Tabs defaultValue="quotes">
                 <TabsList className="grid w-1/3 mx-auto grid-cols-3 my-4">
                     <TabsTrigger value="quotes" onClick={handleTabClick}>Quotes</TabsTrigger>
