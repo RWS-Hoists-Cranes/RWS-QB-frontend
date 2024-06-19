@@ -137,8 +137,8 @@ export default function Estimate() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {orders.map((order, index) => (
-                                    <InvoicePopup order={order} key={index} />
+                                {invoices.map((invoice, index) => (
+                                    <InvoicePopup invoice={invoice} key={index} index={index} />
                                 ))}
                             </TableBody>
 
