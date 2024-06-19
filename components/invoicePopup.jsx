@@ -58,13 +58,20 @@ export default function InvoicePopup({ invoice, index }) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ invoice: invoice }),
+                body: JSON.stringify({ invoice: invoice, gst: gst}),
             });
             const html = await response.text();
-            // openHtmlInNewTab(html)
+            openHtmlInNewTab(html)
         } catch (error) {
             console.error('Error fetching HTML:', error);
         }
+    };
+
+    const openHtmlInNewTab = (htmlContent) => {
+        const newWindow = window.open('');
+        newWindow.document.write(htmlContent);
+        newWindow.print();
+        newWindow.close();
     };
 
 
