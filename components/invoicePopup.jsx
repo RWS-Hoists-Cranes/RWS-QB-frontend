@@ -30,6 +30,17 @@ export default function InvoicePopup({ invoice, index }) {
 
     const saveData = async () => {
         try {
+            invoice.Line.slice(0, invoice.Line.length - 1).map(async (line) => {
+                console.log(line);
+                const response = await fetch(`http://localhost:8080/api/quotePartQuantity?quotation_number=${invoice.estimate.quotation_number}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ quantity_shipped: line.SalesItemLineDetail.Qty, invoice_number: invoice.DocNumber, part_number: line.SalesItemLineDetail.ItemRef.name})
+                })
+            })
+
             const response = await fetch('http://localhost:8080/api/invoice', {
                 method: 'POST',
                 headers: {
@@ -44,6 +55,8 @@ export default function InvoicePopup({ invoice, index }) {
             } else {
                 console.error('Error creating/updating estimate');
             }
+
+            
         } catch (error) {
             console.log(error);
         }
