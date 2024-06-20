@@ -131,6 +131,7 @@ export default function Estimate() {
                                     <TableHead>Customer PO</TableHead>
                                     <TableHead>R.W.S. Job No.</TableHead>
                                     <TableHead className="text-right">Invoice Date</TableHead>
+                                    <TableHead></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>

@@ -21,6 +21,16 @@ import {
     DialogFooter,
     DialogClose
 } from "@/components/ui/dialog"
+
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 import { Label } from "@radix-ui/react-label"
 import { Input } from "./ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -134,6 +144,30 @@ export default function OrderPopup({ order }) {
         newWindow.close();
     };
 
+    const printBackOrder = async () => {
+        try {
+            const response = await fetch('http://localhost:8080/api/backOrderHTML', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    orderNumber,
+                    customerPO,
+                    shippingMethod,
+                    billingType,
+                    comments,
+                    quotationNumber,
+                    dateOrdered,
+                }),
+            });
+            const html = await response.text();
+            openHtmlInNewTab(html)
+        } catch (error) {
+            console.error('Error fetching HTML:', error);
+        }
+    };
+
     return (
         <Dialog key={1} >
             <DialogTrigger asChild>
@@ -145,6 +179,35 @@ export default function OrderPopup({ order }) {
                     </TableCell>
                     <TableCell className="text-right">
                         {dateOrdered.split('T')[0]}
+                    </TableCell>
+                    <TableCell className="text-right">
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger>
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                >
+                                    <circle cx="12" cy="12" r="1"></circle>
+                                    <circle cx="19" cy="12" r="1"></circle>
+                                    <circle cx="5" cy="12" r="1"></circle>
+                                </svg>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuItem onClick={(e) => {
+                                    e.stopPropagation();
+                                    printBackOrder()
+                                }}>Print Back Order</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
                     </TableCell>
                 </TableRow>
             </DialogTrigger>
