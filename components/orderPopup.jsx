@@ -128,6 +128,7 @@ export default function OrderPopup({ order }) {
                     comments,
                     quotationNumber,
                     dateOrdered,
+                    order
                 }),
             });
             const html = await response.text();
@@ -159,6 +160,7 @@ export default function OrderPopup({ order }) {
                     comments,
                     quotationNumber,
                     dateOrdered,
+                    order
                 }),
             });
             const html = await response.text();
