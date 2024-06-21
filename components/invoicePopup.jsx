@@ -30,16 +30,33 @@ export default function InvoicePopup({ invoice, index }) {
 
     const saveData = async () => {
         try {
-            invoice.Line.slice(0, invoice.Line.length - 1).map(async (line) => {
-                console.log(line);
+            
+            const linePromises = invoice.Line.slice(0, invoice.Line.length - 1).map(async (line) => {
+                const part_number = line.SalesItemLineDetail.ItemRef.name;
+
+                console.log("old salesItemQtyInfo", invoice.salesItemQtyInfo[part_number])
+
                 const response = await fetch(`http://localhost:8080/api/quotePartQuantity?quotation_number=${invoice.estimate.quotation_number}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ quantity_shipped: line.SalesItemLineDetail.Qty, invoice_number: invoice.DocNumber, part_number: line.SalesItemLineDetail.ItemRef.name})
+                    body: JSON.stringify({ quantity_shipped: line.SalesItemLineDetail.Qty, invoice_number: invoice.DocNumber, part_number, salesItemQtyInfo: invoice.salesItemQtyInfo[part_number]})
                 })
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                } else {
+                    if (data.updatedSalesItemQtyInfo) {
+                        invoice.salesItemQtyInfo[part_number] = data.updatedSalesItemQtyInfo;
+                        console.log("updated salesItemQtyInfo", invoice.salesItemQtyInfo[part_number]);
+                    }
+                }
             })
+
+            await Promise.all(linePromises);
 
             const response = await fetch('http://localhost:8080/api/invoice', {
                 method: 'POST',
@@ -55,8 +72,6 @@ export default function InvoicePopup({ invoice, index }) {
             } else {
                 console.error('Error creating/updating estimate');
             }
-
-            
         } catch (error) {
             console.log(error);
         }
@@ -65,7 +80,7 @@ export default function InvoicePopup({ invoice, index }) {
 
     const fetchHtmlContent = async () => {
         try {
-            saveData();
+            await saveData();
             const response = await fetch('http://localhost:8080/api/invoiceHtml', {
                 method: 'POST',
                 headers: {

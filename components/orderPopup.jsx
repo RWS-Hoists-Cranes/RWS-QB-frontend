@@ -104,7 +104,6 @@ export default function OrderPopup({ order }) {
             }
 
             const data = await response.json();
-            console.log('Order updated:', data);
         } catch (error) {
             console.error('Error updating order:', error);
         }
