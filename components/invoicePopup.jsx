@@ -167,13 +167,13 @@ export default function InvoicePopup({ invoice, index }) {
                     </TableBody>
                 </Table> */}
                 <DialogFooter>
-                    <DialogClose variant="outline" onClick={saveData}> 
+                    <DialogClose variant="outline" onClick={saveData} asChild> 
                         <Button variant="outline" onClick={saveData}>
                             Save and Close
                         </Button>
                     </DialogClose>
                     <DialogClose>
-                        <Button type="submit" onClick={fetchHtmlContent}>
+                        <Button type="submit" onClick={fetchHtmlContent} asChild>
                             Save and Print
                         </Button>
                     </DialogClose>

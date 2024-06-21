@@ -321,12 +321,12 @@ export default function OrderPopup({ order }) {
                 </div>
 
                 <DialogFooter>
-                    <DialogClose>
+                    <DialogClose asChild>
                         <Button variant="outline" onClick={updateDatabase}>
                             Save and Close
                         </Button>
                     </DialogClose>
-                    <DialogClose>
+                    <DialogClose asChild>
                         <Button type="submit" onClick={displayOrderHTML}>
                             Save and Print
                         </Button>

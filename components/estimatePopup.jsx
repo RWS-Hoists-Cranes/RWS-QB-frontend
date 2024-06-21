@@ -302,12 +302,12 @@ export default function EstimatePopup({ estimate }) {
                             </TableFooter>
                         </Table>
                         <DialogFooter>
-                            <DialogClose>
+                            <DialogClose asChild>
                                 <Button variant="outline" onClick={saveData}>
                                     Save and Close
                                 </Button>
                             </DialogClose>
-                            <DialogClose>
+                            <DialogClose asChild>
                                 <Button type="submit" onClick={fetchHtmlContent}>
                                     Save and Print
                                 </Button>
