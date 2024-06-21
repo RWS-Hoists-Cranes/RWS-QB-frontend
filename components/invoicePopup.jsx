@@ -172,8 +172,8 @@ export default function InvoicePopup({ invoice, index }) {
                             Save and Close
                         </Button>
                     </DialogClose>
-                    <DialogClose>
-                        <Button type="submit" onClick={fetchHtmlContent} asChild>
+                    <DialogClose asChild>
+                        <Button type="submit" onClick={fetchHtmlContent}>
                             Save and Print
                         </Button>
                     </DialogClose>
