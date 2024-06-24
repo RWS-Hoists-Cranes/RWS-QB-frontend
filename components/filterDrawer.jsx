@@ -46,19 +46,27 @@ export default function FilterDrawer() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ dateRange, territory, selectedForm }),
+                body: JSON.stringify({ dateRange, territory, reportType: selectedForm }),
             })
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             };
 
-            console.log("Error")
+            const html = await response.text();
+            openHtmlInNewTab(html)
         } catch (error) {
             console.error('Error printing filtered form', error);
             setErrorMessage("Cannot print the filtered form");
         }
     }
+
+    const openHtmlInNewTab = (htmlContent) => {
+        const newWindow = window.open('');
+        newWindow.document.write(htmlContent);
+        newWindow.print();
+        newWindow.close();
+    };
 
 
     return (
@@ -99,9 +107,11 @@ export default function FilterDrawer() {
                         </AccordionItem>
                     </Accordion>
                     <DrawerFooter>
-                        <Button onClick={printForm}>
-                            Print Form
-                        </Button>
+                        <DrawerClose>
+                            <Button onClick={printForm}>
+                                Print Form
+                            </Button>
+                        </DrawerClose>
     
                     </DrawerFooter>
                 </DrawerContent>
