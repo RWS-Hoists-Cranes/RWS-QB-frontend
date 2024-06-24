@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/accordion"
 import PickDates from "./pickDates";
 import PickTerritory from "./pickTerritory";
+import PickForm from "./pickForm";
 
 export default function FilterDrawer() {
     return (
@@ -50,7 +51,7 @@ export default function FilterDrawer() {
                     <AccordionItem value="pick-form">
                         <AccordionTrigger>Pick Form</AccordionTrigger>
                         <AccordionContent>
-                            <PickTerritory/>
+                            <PickForm/>
                         </AccordionContent>
                     </AccordionItem>
                 </Accordion>
