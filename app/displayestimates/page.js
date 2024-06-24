@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/tabs"
 import OrderPopup from "@/components/orderPopup"
 import InvoicePopup from "@/components/invoicePopup"
-
+import FilterDrawer from "@/components/filterDrawer"
 
 export default function Estimate() {
     const [estimates, setEstimates] = useState([]);
@@ -73,11 +73,13 @@ export default function Estimate() {
 
     return (
         <>
+            <FilterDrawer/>
             <Tabs defaultValue="quotes">
                 <TabsList className="grid w-1/3 mx-auto grid-cols-3 my-4">
                     <TabsTrigger value="quotes" onClick={handleTabClick}>Quotes</TabsTrigger>
                     <TabsTrigger value="order_form" onClick={handleTabClick}>Order Form</TabsTrigger>
                     <TabsTrigger value="invoice" onClick={handleTabClick}>Invoice</TabsTrigger>
+
                 </TabsList>
                 <TabsContent value="quotes">
                     <Card className="w-3/4 mx-auto">
@@ -141,9 +143,8 @@ export default function Estimate() {
                         </Table>
                     </Card>
                 </TabsContent>
-
-
             </Tabs>
+
         </>
     );
 }
