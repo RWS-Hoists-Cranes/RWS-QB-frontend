@@ -36,7 +36,7 @@ export default function EstimatePopup({ estimate }) {
     const [term, setTerm] = useState('');
     const [fob, setFob] = useState('');
     const [itemDelivery, setItemDelivery] = useState({});
-    const [showRow, setShowRow] = useState(true);
+    const [switchState, setSwitchState] = useState(estimate.TxnStatus === 'Accepted');
 
     const itemQuantityOrdered = {};
 
@@ -124,10 +124,15 @@ export default function EstimatePopup({ estimate }) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ SyncToken: estimate.SyncToken, Id: estimate.Id, estimateID: estimate.DocNumber }),
+                body: JSON.stringify({
+                    SyncToken: estimate.SyncToken,
+                    Id: estimate.Id,
+                    estimateID: estimate.DocNumber,
+                    status: !switchState
+                })
             });
             const data = await response.json();
-            setShowRow(false);
+            setSwitchState(!switchState);
         } catch (error) {
             console.error('Error accepting estimate:', error);
         }
@@ -163,7 +168,7 @@ export default function EstimatePopup({ estimate }) {
 
     return (
         <>
-            {estimate.TxnStatus === 'Pending' && showRow &&
+            {(estimate.TxnStatus === 'Pending' || estimate.TxnStatus === 'Accepted') &&
                 <Dialog key={estimate.DocNumber}>
                     <DialogTrigger asChild>
                         <TableRow>
@@ -174,6 +179,7 @@ export default function EstimatePopup({ estimate }) {
                             </TableCell>
                             <TableCell className="text-right">
                                 <Switch
+                                    checked={switchState}
                                     onCheckedChange={acceptestimate}
                                     onClick={(e) => e.stopPropagation()} />
                             </TableCell>
@@ -276,23 +282,24 @@ export default function EstimatePopup({ estimate }) {
                                 {estimate.Line.slice(0, estimate.Line.length - 1).map((line) => {
                                     // <div>{line.SalesItemLineDetail.ItemRef.name}</div>
                                     itemQuantityOrdered[line.SalesItemLineDetail.ItemRef.name] = line.SalesItemLineDetail.Qty;
-                                    
+
                                     return (
-                                    <TableRow key={line.Id}>
-                                        <TableCell className="font-medium">{line.SalesItemLineDetail.ItemRef.name}</TableCell>
-                                        <TableCell className="w-full">{line.Description}</TableCell>
-                                        <TableCell className="text-right">
-                                            <textarea
-                                                type="text"
-                                                value={itemDelivery[line.SalesItemLineDetail.ItemRef.name] || ''}
-                                                onChange={(e) =>
-                                                    handleDeliveryChange(line.SalesItemLineDetail.ItemRef.name, e.target.value)
-                                                }
-                                                className="min-h-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            />
-                                        </TableCell>
-                                    </TableRow>
-                                    )})}
+                                        <TableRow key={line.Id}>
+                                            <TableCell className="font-medium">{line.SalesItemLineDetail.ItemRef.name}</TableCell>
+                                            <TableCell className="w-full">{line.Description}</TableCell>
+                                            <TableCell className="text-right">
+                                                <textarea
+                                                    type="text"
+                                                    value={itemDelivery[line.SalesItemLineDetail.ItemRef.name] || ''}
+                                                    onChange={(e) =>
+                                                        handleDeliveryChange(line.SalesItemLineDetail.ItemRef.name, e.target.value)
+                                                    }
+                                                    className="min-h-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                />
+                                            </TableCell>
+                                        </TableRow>
+                                    )
+                                })}
                             </TableBody>
                             <TableFooter>
                                 {/* <TableRow>
