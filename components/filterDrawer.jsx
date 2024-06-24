@@ -25,7 +25,9 @@ import PickForm from "./pickForm";
 export default function FilterDrawer() {
     return (
         <Drawer direction="left">
-            <DrawerTrigger asChild><RxDoubleArrowRight className="w-6 h-6" /></DrawerTrigger>
+            <DrawerTrigger asChild>
+                <RxDoubleArrowRight className="w-6 h-6 m-6" />
+            </DrawerTrigger>
             <DrawerContent className="w-1/3 h-full px-4">
                 <DrawerHeader className="flex w-full justify-between">
                     <DrawerTitle>Filtering System</DrawerTitle>
@@ -33,7 +35,7 @@ export default function FilterDrawer() {
                         <RxDoubleArrowLeft className="w-6 h-6" />
                     </DrawerClose>
                 </DrawerHeader>
-                <Accordion type="multiple" collapsible defaultValue="pick-form">
+                <Accordion type="multiple" collapsible defaultValue={["pick-form"]}>
                     <AccordionItem value="pick-date">
                         <AccordionTrigger>Pick Dates</AccordionTrigger>
                         <AccordionContent>

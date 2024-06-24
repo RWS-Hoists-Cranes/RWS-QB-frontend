@@ -6,10 +6,10 @@ import { useState } from "react";
 
 
 export default function PickForm() {
-    const [selectedForm, setSelectedForm] = useState("");
+    const [selectedForm, setSelectedForm] = useState("invoice-report");
     return (
         <>
-            <RadioGroup defaultValue="invoice-report" onValueChange={setSelectedForm} value={selectedForm}>
+            <RadioGroup onValueChange={setSelectedForm} value={selectedForm}>
                 <div className="flex items-center space-x-2">
                     <RadioGroupItem value="invoice-report" id="invoice-report" />
                     <Label htmlFor="invoice-report">Invoice Report</Label>
