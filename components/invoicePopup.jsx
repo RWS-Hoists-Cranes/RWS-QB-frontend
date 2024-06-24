@@ -30,7 +30,7 @@ export default function InvoicePopup({ invoice, index }) {
 
     const saveData = async () => {
         try {
-            
+
             const linePromises = invoice.Line.slice(0, invoice.Line.length - 1).map(async (line) => {
                 const part_number = line.SalesItemLineDetail.ItemRef.name;
 
@@ -41,7 +41,7 @@ export default function InvoicePopup({ invoice, index }) {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ quantity_shipped: line.SalesItemLineDetail.Qty, invoice_number: invoice.DocNumber, part_number, salesItemQtyInfo: invoice.salesItemQtyInfo[part_number]})
+                    body: JSON.stringify({ quantity_shipped: line.SalesItemLineDetail.Qty, invoice_number: invoice.DocNumber, part_number, salesItemQtyInfo: invoice.salesItemQtyInfo[part_number] })
                 })
 
                 const data = await response.json();
@@ -63,7 +63,7 @@ export default function InvoicePopup({ invoice, index }) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ invoice_number: invoice.DocNumber, gst: gst, quotation_number: invoice.estimate.quotation_number})
+                body: JSON.stringify({ invoice_number: invoice.DocNumber, gst: gst, quotation_number: invoice.estimate.quotation_number })
             });
 
             if (response.ok) {
@@ -86,7 +86,7 @@ export default function InvoicePopup({ invoice, index }) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ invoice: invoice, gst: gst}),
+                body: JSON.stringify({ invoice: invoice, gst: gst }),
             });
             const html = await response.text();
             openHtmlInNewTab(html)
@@ -105,80 +105,64 @@ export default function InvoicePopup({ invoice, index }) {
 
 
     return (
-        <Dialog key={index} >
-            <DialogTrigger asChild>
-                <TableRow>
-                    <TableCell className="font-medium">{invoice.DocNumber}</TableCell>
-                    <TableCell className="">{invoice.order.customer_PO}</TableCell>
-                    <TableCell className="">
-                        {invoice.order.order_number}
-                    </TableCell>
-                    <TableCell className="text-right">
-                        {invoice.order.date_ordered.split('T')[0]}
-                    </TableCell>
-                </TableRow>
-            </DialogTrigger>
-            <DialogContent className="min-w-fit">
-                <DialogHeader>
-                    <DialogTitle>Edit Invoice Information</DialogTitle>
-                </DialogHeader>
+
+        <TableRow
+            onClick={() => fetchHtmlContent()}
+            className="cursor-pointer hover:bg-gray-100"
+        >
+            <TableCell className="font-medium">{invoice.DocNumber}</TableCell>
+            <TableCell className="">{invoice.order.customer_PO}</TableCell>
+            <TableCell className="">
+                {invoice.order.order_number}
+            </TableCell>
+            <TableCell className="text-right">
+                {invoice.order.date_ordered.split('T')[0]}
+            </TableCell>
+        </TableRow>
+        // <Dialog key={index} >
+        //     <DialogTrigger asChild>
+        //         <TableRow>
+        //             <TableCell className="font-medium">{invoice.DocNumber}</TableCell>
+        //             <TableCell className="">{invoice.order.customer_PO}</TableCell>
+        //             <TableCell className="">
+        //                 {invoice.order.order_number}
+        //             </TableCell>
+        //             <TableCell className="text-right">
+        //                 {invoice.order.date_ordered.split('T')[0]}
+        //             </TableCell>
+        //         </TableRow>
+        //     </DialogTrigger>
+        //     <DialogContent className="min-w-fit">
+        //         <DialogHeader>
+        //             <DialogTitle>Edit Invoice Information</DialogTitle>
+        //         </DialogHeader>
 
 
-                <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="name" className="text-right">
-                            GST No.
-                        </Label>
-                        <Input
-                            value={gst}
-                            onChange={(e) => setGst(e.target.value)}
-                            className="col-span-3"
-                        />
-                    </div>
-                </div>
-
-
-                {/* <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[150px]">RWS Part No.</TableHead>
-                            <TableHead className="w-full">Description</TableHead>
-                            <TableHead className="text-right">Delivery</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {estimate.Line.slice(0, estimate.Line.length - 1).map((line) => (
-                            // <div>{line.SalesItemLineDetail.ItemRef.name}</div>
-                            <TableRow key={line.Id}>
-                                <TableCell className="font-medium">{line.SalesItemLineDetail.ItemRef.name}</TableCell>
-                                <TableCell className="w-full">{line.Description}</TableCell>
-                                <TableCell className="text-right">
-                                    <textarea
-                                        type="text"
-                                        value={itemDelivery[line.SalesItemLineDetail.ItemRef.name] || ''}
-                                        onChange={(e) =>
-                                            handleDeliveryChange(line.SalesItemLineDetail.ItemRef.name, e.target.value)
-                                        }
-                                        className="min-h-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    />
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table> */}
-                <DialogFooter>
-                    <DialogClose variant="outline" onClick={saveData} asChild> 
-                        <Button variant="outline" onClick={saveData}>
-                            Save and Close
-                        </Button>
-                    </DialogClose>
-                    <DialogClose asChild>
-                        <Button type="submit" onClick={fetchHtmlContent}>
-                            Save and Print
-                        </Button>
-                    </DialogClose>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+        //         <div className="grid gap-4 py-4">
+        //             <div className="grid grid-cols-4 items-center gap-4">
+        //                 <Label htmlFor="name" className="text-right">
+        //                     GST No.
+        //                 </Label>
+        //                 <Input
+        //                     value={gst}
+        //                     onChange={(e) => setGst(e.target.value)}
+        //                     className="col-span-3"
+        //                 />
+        //             </div>
+        //         </div>
+        //         <DialogFooter>
+        //             <DialogClose variant="outline" onClick={saveData} asChild> 
+        //                 <Button variant="outline" onClick={saveData}>
+        //                     Save and Close
+        //                 </Button>
+        //             </DialogClose>
+        //             <DialogClose asChild>
+        //                 <Button type="submit" onClick={fetchHtmlContent}>
+        //                     Save and Print
+        //                 </Button>
+        //             </DialogClose>
+        //         </DialogFooter>
+        //     </DialogContent>
+        // </Dialog>
     )
 }
