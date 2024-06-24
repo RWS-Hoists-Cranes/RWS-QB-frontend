@@ -6,7 +6,6 @@ import {
     Drawer,
     DrawerClose,
     DrawerContent,
-    DrawerDescription,
     DrawerFooter,
     DrawerHeader,
     DrawerTitle,
@@ -23,6 +22,7 @@ import PickTerritory from "./pickTerritory";
 import PickForm from "./pickForm";
 import { useState } from "react";
 import { startOfMonth, endOfMonth } from 'date-fns';
+import { ErrorAlert, SuccessAlert } from "./CustomAlert";
 
 export default function FilterDrawer() {
     const [dateRange, setDateRange] = useState(() => {
@@ -37,53 +37,76 @@ export default function FilterDrawer() {
 
     const [selectedForm, setSelectedForm] = useState("invoice-report");
 
+    const [errorMessage, setErrorMessage] = useState('');
+
     async function printForm() {
-        console.log("Printing Form");
+        try {
+            const response = await fetch('http://localhost:8080/api/filteredForm', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ dateRange, territory, selectedForm }),
+            })
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            };
+
+            console.log("Error")
+        } catch (error) {
+            console.error('Error printing filtered form', error);
+            setErrorMessage("Cannot print the filtered form");
+        }
     }
 
 
     return (
-        <Drawer direction="left">
-            <DrawerTrigger asChild>
-                <RxDoubleArrowRight className="w-6 h-6 m-6" />
-            </DrawerTrigger>
-            <DrawerContent className="w-1/3 h-full px-4">
-                <DrawerHeader className="flex w-full justify-between">
-                    <DrawerTitle>Filtering System</DrawerTitle>
-                    <DrawerClose>
-                        <RxDoubleArrowLeft className="w-6 h-6" />
-                    </DrawerClose>
-                </DrawerHeader>
-                <Accordion type="multiple" collapsible defaultValue={["pick-form"]}>
-                    <AccordionItem value="pick-date">
-                        <AccordionTrigger>Pick Dates</AccordionTrigger>
-                        <AccordionContent>
-                            <PickDates dateRange={dateRange} setDateRange={setDateRange}/>
-                        </AccordionContent>
-                    </AccordionItem>
+        <>
+            {errorMessage && <ErrorAlert message={errorMessage} />}
 
-                    <AccordionItem value="pick-territory">
-                        <AccordionTrigger>Pick Territory</AccordionTrigger>
-                        <AccordionContent>
-                            <PickTerritory value={territory} setValue={setTerritory}/>
-                        </AccordionContent>
-                    </AccordionItem>
-
-                    <AccordionItem value="pick-form">
-                        <AccordionTrigger>Pick Form</AccordionTrigger>
-                        <AccordionContent>
-                            <PickForm selectedForm={selectedForm} setSelectedForm={setSelectedForm}/>
-                        </AccordionContent>
-                    </AccordionItem>
-                </Accordion>
-                <DrawerFooter>
-                    <Button onClick={printForm}>
-                        Print Form
-                    </Button>
-
-                </DrawerFooter>
-            </DrawerContent>
-        </Drawer>
+            <Drawer direction="left">
+                <DrawerTrigger asChild>
+                    <RxDoubleArrowRight className="w-6 h-6 m-6" />
+                </DrawerTrigger>
+                <DrawerContent className="w-1/3 h-full px-4">
+                    <DrawerHeader className="flex w-full justify-between">
+                        <DrawerTitle>Filtering System</DrawerTitle>
+                        <DrawerClose>
+                            <RxDoubleArrowLeft className="w-6 h-6" />
+                        </DrawerClose>
+                    </DrawerHeader>
+                    <Accordion type="multiple" collapsible defaultValue={["pick-form"]}>
+                        <AccordionItem value="pick-date">
+                            <AccordionTrigger>Pick Dates</AccordionTrigger>
+                            <AccordionContent>
+                                <PickDates dateRange={dateRange} setDateRange={setDateRange} />
+                            </AccordionContent>
+                        </AccordionItem>
+    
+                        <AccordionItem value="pick-territory">
+                            <AccordionTrigger>Pick Territory</AccordionTrigger>
+                            <AccordionContent>
+                                <PickTerritory value={territory} setValue={setTerritory} />
+                            </AccordionContent>
+                        </AccordionItem>
+    
+                        <AccordionItem value="pick-form">
+                            <AccordionTrigger>Pick Form</AccordionTrigger>
+                            <AccordionContent>
+                                <PickForm selectedForm={selectedForm} setSelectedForm={setSelectedForm} />
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
+                    <DrawerFooter>
+                        <Button onClick={printForm}>
+                            Print Form
+                        </Button>
+    
+                    </DrawerFooter>
+                </DrawerContent>
+            </Drawer>
+        </>
 
     )
 }
