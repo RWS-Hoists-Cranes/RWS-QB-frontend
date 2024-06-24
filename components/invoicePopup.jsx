@@ -34,8 +34,6 @@ export default function InvoicePopup({ invoice, index }) {
             const linePromises = invoice.Line.slice(0, invoice.Line.length - 1).map(async (line) => {
                 const part_number = line.SalesItemLineDetail.ItemRef.name;
 
-                console.log("old salesItemQtyInfo", invoice.salesItemQtyInfo[part_number])
-
                 const response = await fetch(`http://localhost:8080/api/quotePartQuantity?quotation_number=${invoice.estimate.quotation_number}`, {
                     method: 'POST',
                     headers: {
@@ -51,7 +49,6 @@ export default function InvoicePopup({ invoice, index }) {
                 } else {
                     if (data.updatedSalesItemQtyInfo) {
                         invoice.salesItemQtyInfo[part_number] = data.updatedSalesItemQtyInfo;
-                        console.log("updated salesItemQtyInfo", invoice.salesItemQtyInfo[part_number]);
                     }
                 }
             })

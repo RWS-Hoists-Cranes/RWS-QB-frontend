@@ -57,7 +57,6 @@ export default function PickTerritory() {
             </PopoverTrigger>
             <PopoverContent className="w-[300px] p-0">
                 <Command filter={(value, search) => {
-                    console.log("eyy", value, search);
                     if (value.includes(search.toLowerCase())) return 1
                     return 0
                 }}>

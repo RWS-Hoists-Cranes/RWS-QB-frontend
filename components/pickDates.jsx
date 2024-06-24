@@ -1,15 +1,17 @@
 "use client"
 import { Calendar } from "@/components/ui/calendar";
 import { useState } from "react";
-import { addDays, format } from 'date-fns';
+import { format, startOfMonth, endOfMonth } from 'date-fns';
 
 export default function PickDates() {
-    const [dateRange, setDateRange] = useState({
-        from: new Date(),
-        to: addDays(new Date(), 7)
+    const [dateRange, setDateRange] = useState(() => {
+        const now = new Date();
+        return {
+            from: startOfMonth(now),
+            to: endOfMonth(now)
+        };
     });
 
-    console.log(dateRange)
     return (
         <div>
             <div className="flex space-x-2 mb-4">
