@@ -1,7 +1,5 @@
 "use client"
 
-import ClickableBox from "./ui/clickableBox";
-
 import { Check, ChevronsUpDown } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -12,6 +10,7 @@ import {
     CommandGroup,
     CommandInput,
     CommandItem,
+    CommandList
 } from "@/components/ui/command"
 import {
     Popover,
@@ -20,29 +19,26 @@ import {
 } from "@/components/ui/popover"
 
 import { useState } from "react";
-import { CommandList } from "cmdk";
 
 const locations = [
-    { value: "8105", label: "8105 | Ontario, CA" },
-    { value: "8106", label: "8106 | Toronto, ON" },
-    { value: "8107", label: "8107 | Vancouver, BC" },
-    { value: "8108", label: "8108 | Montreal, QC" },
-    { value: "8109", label: "8109 | Calgary, AB" },
-    { value: "8110", label: "8110 | Edmonton, AB" },
-    { value: "8111", label: "8111 | Ottawa, ON" },
-    { value: "8112", label: "8112 | Quebec City, QC" },
-    { value: "8113", label: "8113 | Winnipeg, MB" },
-    { value: "8114", label: "8114 | Halifax, NS" },
-    { value: "8115", label: "8115 | Saskatoon, SK" },
-    { value: "8116", label: "8116 | Regina, SK" },
-    { value: "8117", label: "8117 | St. John's, NL" },
-]
+    { value: "6903", label: "6903 | Alberta" },
+    { value: "7003", label: "7003 | B.C." },
+    { value: "6703", label: "6703 | Manitoba" },
+    { value: "6203", label: "6203 | New Brunswick" },
+    { value: "6303", label: "6303 | Newfoundland" },
+    { value: "6003", label: "6003 | Nova Scotia" },
+    { value: "6503", label: "6503 | Ontario" },
+    { value: "61103", label: "61103 | P.E.I." },
+    { value: "6403", label: "6403 | Quebec" },
+    { value: "6803", label: "6803 | Saskatchewan" },
+    { value: "7103", label: "7103 | USA" },
+    { value: "7203", label: "7203 | Overseas & Exports" },
+    { value: "7403", label: "7403 | Northwest Territories" },
+];
 
 export default function PickTerritory() {
     const [open, setOpen] = useState(false)
     const [value, setValue] = useState("")
-
-    console.log("value is", value)
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
@@ -60,17 +56,21 @@ export default function PickTerritory() {
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[300px] p-0">
-                <Command>
+                <Command filter={(value, search) => {
+                    console.log("eyy", value, search);
+                    if (value.includes(search.toLowerCase())) return 1
+                    return 0
+                }}>
                     <CommandInput placeholder="Search location..." />
                     <CommandEmpty>No location found.</CommandEmpty>
-                    <CommandGroup>
-                        {locations.map((location => (
-                            <CommandList key={location.value}>
+                    <CommandList>
+                        <CommandGroup>
+                            {locations.map((location) => (
                                 <CommandItem
-                                    value={location.value}
-                                    onSelect={(currentValue) => {
-                                        console.log("currentValue", currentValue);
-                                        setValue(currentValue === value ? "" : currentValue)
+                                    key={location.value}
+                                    value={location.label.toLowerCase()}
+                                    onSelect={() => {
+                                        setValue(location.value === value ? "" : location.value)
                                         setOpen(false)
                                     }}
                                 >
@@ -82,10 +82,9 @@ export default function PickTerritory() {
                                     />
                                     {location.label}
                                 </CommandItem>
-
-                            </CommandList>
-                        )))}
-                    </CommandGroup>
+                            ))}
+                        </CommandGroup>
+                    </CommandList>
                 </Command>
             </PopoverContent>
         </Popover>
