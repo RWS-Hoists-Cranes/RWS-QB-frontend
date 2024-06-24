@@ -5,8 +5,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useState } from "react";
 
 
-export default function PickForm() {
-    const [selectedForm, setSelectedForm] = useState("invoice-report");
+export default function PickForm({selectedForm, setSelectedForm}) {
     return (
         <>
             <RadioGroup onValueChange={setSelectedForm} value={selectedForm}>

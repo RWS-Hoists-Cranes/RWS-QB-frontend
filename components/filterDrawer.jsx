@@ -21,8 +21,27 @@ import {
 import PickDates from "./pickDates";
 import PickTerritory from "./pickTerritory";
 import PickForm from "./pickForm";
+import { useState } from "react";
+import { startOfMonth, endOfMonth } from 'date-fns';
 
 export default function FilterDrawer() {
+    const [dateRange, setDateRange] = useState(() => {
+        const now = new Date();
+        return {
+            from: startOfMonth(now),
+            to: endOfMonth(now)
+        };
+    });
+
+    const [territory, setTerritory] = useState("")
+
+    const [selectedForm, setSelectedForm] = useState("invoice-report");
+
+    async function printForm() {
+        console.log("Printing Form");
+    }
+
+
     return (
         <Drawer direction="left">
             <DrawerTrigger asChild>
@@ -39,26 +58,28 @@ export default function FilterDrawer() {
                     <AccordionItem value="pick-date">
                         <AccordionTrigger>Pick Dates</AccordionTrigger>
                         <AccordionContent>
-                            <PickDates/>
+                            <PickDates dateRange={dateRange} setDateRange={setDateRange}/>
                         </AccordionContent>
                     </AccordionItem>
 
                     <AccordionItem value="pick-territory">
                         <AccordionTrigger>Pick Territory</AccordionTrigger>
                         <AccordionContent>
-                            <PickTerritory/>
+                            <PickTerritory value={territory} setValue={setTerritory}/>
                         </AccordionContent>
                     </AccordionItem>
 
                     <AccordionItem value="pick-form">
                         <AccordionTrigger>Pick Form</AccordionTrigger>
                         <AccordionContent>
-                            <PickForm/>
+                            <PickForm selectedForm={selectedForm} setSelectedForm={setSelectedForm}/>
                         </AccordionContent>
                     </AccordionItem>
                 </Accordion>
                 <DrawerFooter>
-                    <Button>Submit</Button>
+                    <Button onClick={printForm}>
+                        Print Form
+                    </Button>
 
                 </DrawerFooter>
             </DrawerContent>

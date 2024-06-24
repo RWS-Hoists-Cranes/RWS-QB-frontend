@@ -36,9 +36,8 @@ const locations = [
     { value: "7403", label: "7403 | Northwest Territories" },
 ];
 
-export default function PickTerritory() {
+export default function PickTerritory({value, setValue}) {
     const [open, setOpen] = useState(false)
-    const [value, setValue] = useState("")
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
