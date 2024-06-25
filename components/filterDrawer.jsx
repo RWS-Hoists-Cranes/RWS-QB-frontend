@@ -33,7 +33,7 @@ export default function FilterDrawer() {
         };
     });
 
-    const [territory, setTerritory] = useState("")
+    const [territory, setTerritory] = useState('6503')
 
     const [selectedForm, setSelectedForm] = useState("invoice-report");
 
