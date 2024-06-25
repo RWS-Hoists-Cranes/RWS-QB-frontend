@@ -21,15 +21,15 @@ import PickDates from "./pickDates";
 import PickTerritory from "./pickTerritory";
 import PickForm from "./pickForm";
 import { useState } from "react";
-import { startOfMonth, endOfMonth } from 'date-fns';
+import { startOfMonth, endOfMonth, startOfDay } from 'date-fns';
 import { ErrorAlert, SuccessAlert } from "./CustomAlert";
 
 export default function FilterDrawer() {
     const [dateRange, setDateRange] = useState(() => {
         const now = new Date();
         return {
-            from: startOfMonth(now),
-            to: endOfMonth(now)
+            from: startOfDay(startOfMonth(now)),
+            to: startOfDay(endOfMonth(now))
         };
     });
 
@@ -40,6 +40,8 @@ export default function FilterDrawer() {
     const [errorMessage, setErrorMessage] = useState('');
 
     async function printForm() {
+
+        console.log(dateRange);
         try {
             const response = await fetch('http://localhost:8080/api/filteredForm', {
                 method: 'POST',
