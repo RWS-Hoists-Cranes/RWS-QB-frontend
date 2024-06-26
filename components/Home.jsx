@@ -7,11 +7,10 @@ export default function HomeClient() {
   const router = useRouter();
 
   const handleClick = () => {
-    // Assuming you want to open the URL in a new tab or window
-    window.open('http://localhost:8080/api/auth');
+
 
     // If you want to navigate within the same window
-    // router.push('http://localhost:8080/api/auth');
+    router.push('http://localhost:8080/api/auth');
   };
 
   return (
