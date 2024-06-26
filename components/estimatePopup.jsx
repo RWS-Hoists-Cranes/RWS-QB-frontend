@@ -36,7 +36,7 @@ export default function EstimatePopup({ estimate }) {
     const [term, setTerm] = useState('');
     const [fob, setFob] = useState('');
     const [itemDelivery, setItemDelivery] = useState({});
-    const [switchState, setSwitchState] = useState(estimate.TxnStatus === 'Accepted');
+    const [switchState, setSwitchState] = useState(estimate.TxnStatus === 'Accepted' || estimate.TxnStatus === 'Converted');
 
     const itemQuantityOrdered = {};
 
@@ -168,7 +168,7 @@ export default function EstimatePopup({ estimate }) {
 
     return (
         <>
-            {(estimate.TxnStatus === 'Pending' || estimate.TxnStatus === 'Accepted') &&
+            {(estimate.TxnStatus === 'Pending' || estimate.TxnStatus === 'Accepted' || estimate.TxnStatus === 'Converted') &&
                 <Dialog key={estimate.DocNumber}>
                     <DialogTrigger asChild>
                         <TableRow>
