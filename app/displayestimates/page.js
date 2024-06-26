@@ -28,44 +28,70 @@ export default function Estimate() {
     const [invoices, setInvoices] = useState([]);
     const [reload, setReload] = useState(false);
 
+    // useEffect(() => {
+    //     async function getEstimates() {
+    //         const response = await fetch('http://localhost:8080/api/estimates');
+
+    //         const data = await response.json();
+    //         setEstimates(data.QueryResponse.Estimate || []);
+    //     };
+
+    //     getEstimates();
+    // }, [reload]);
+
+    // useEffect(() => {
+    //     async function getOrders() {
+    //         const response = await fetch('http://localhost:8080/api/orders');
+
+    //         const data = await response.json();
+    //         setOrders(data || []);
+    //     };
+
+    //     getOrders();
+    // }, [reload]);
+
+    // useEffect(() => {
+
+    // })
+
+
+
+    // useEffect(() => {
+    //     async function getInvoices() {
+    //         const response = await fetch('http://localhost:8080/api/invoices');
+
+    //         const data = await response.json();
+    //         setInvoices(data || []);
+    //     };
+
+    //     getInvoices();
+    // }, [reload]);
     useEffect(() => {
-        async function getEstimates() {
-            const response = await fetch('http://localhost:8080/api/estimates');
+        async function fetchData() {
+            try {
+                // First, fetch and set estimates
+                const estimatesResponse = await fetch('http://localhost:8080/api/estimates');
+                const estimatesData = await estimatesResponse.json();
+                setEstimates(estimatesData.QueryResponse.Estimate || []);
 
-            const data = await response.json();
-            setEstimates(data.QueryResponse.Estimate || []);
-        };
+                // After estimates are fetched, fetch and set orders
+                const ordersResponse = await fetch('http://localhost:8080/api/orders');
+                const ordersData = await ordersResponse.json();
+                setOrders(ordersData || []);
 
-        getEstimates();
-    }, [reload]);
+                // Finally, fetch and set invoices
+                const invoicesResponse = await fetch('http://localhost:8080/api/invoices');
+                const invoicesData = await invoicesResponse.json();
+                setInvoices(invoicesData || []);
 
-    useEffect(() => {
-        async function getOrders() {
-            const response = await fetch('http://localhost:8080/api/orders');
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                // Handle error (e.g., set an error state)
+            }
+        }
 
-            const data = await response.json();
-            setOrders(data || []);
-        };
-
-        getOrders();
-    }, [reload]);
-
-    useEffect(() => {
-
-    })
-
-
-
-    useEffect(() => {
-        async function getInvoices() {
-            const response = await fetch('http://localhost:8080/api/invoices');
-
-            const data = await response.json();
-            setInvoices(data || []);
-        };
-
-        getInvoices();
-    }, [reload]);
+        fetchData();
+    }, [reload]);   
 
     const handleTabClick = () => {
         setReload(!reload);
@@ -73,7 +99,7 @@ export default function Estimate() {
 
     return (
         <>
-            <FilterDrawer/>
+            <FilterDrawer />
             <Tabs defaultValue="quotes">
                 <TabsList className="grid w-1/3 mx-auto grid-cols-3 my-4">
                     <TabsTrigger value="quotes" onClick={handleTabClick}>Quotes</TabsTrigger>
