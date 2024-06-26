@@ -20,6 +20,7 @@ import {
 import PickDates from "./pickDates";
 import PickTerritory from "./pickTerritory";
 import PickForm from "./pickForm";
+import PickCustomer from "./pickCustomer";
 import { useState } from "react";
 import { startOfMonth, endOfMonth, startOfDay } from 'date-fns';
 import { ErrorAlert, SuccessAlert } from "./CustomAlert";
@@ -33,9 +34,11 @@ export default function FilterDrawer() {
         };
     });
 
-    const [territory, setTerritory] = useState('6503')
+    const [territory, setTerritory] = useState('');
 
     const [selectedForm, setSelectedForm] = useState("invoice-report");
+
+    const [customer, setCustomer] = useState('');
 
     const [errorMessage, setErrorMessage] = useState('');
 
@@ -48,7 +51,7 @@ export default function FilterDrawer() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ dateRange, territory, reportType: selectedForm }),
+                body: JSON.stringify({ dateRange, territory, reportType: selectedForm, customer }),
             })
 
             if (!response.ok) {
@@ -93,14 +96,21 @@ export default function FilterDrawer() {
                                 <PickDates dateRange={dateRange} setDateRange={setDateRange} />
                             </AccordionContent>
                         </AccordionItem>
-    
+
                         <AccordionItem value="pick-territory">
                             <AccordionTrigger>Pick Territory</AccordionTrigger>
                             <AccordionContent>
                                 <PickTerritory value={territory} setValue={setTerritory} />
                             </AccordionContent>
                         </AccordionItem>
-    
+
+                        <AccordionItem value="pick-customer">
+                            <AccordionTrigger>Pick Customer</AccordionTrigger>
+                            <AccordionContent>
+                                <PickCustomer value={customer} setValue={setCustomer} />
+                            </AccordionContent>
+                        </AccordionItem>
+
                         <AccordionItem value="pick-form">
                             <AccordionTrigger>Pick Form</AccordionTrigger>
                             <AccordionContent>
@@ -114,7 +124,7 @@ export default function FilterDrawer() {
                                 Print Form
                             </Button>
                         </DrawerClose>
-    
+
                     </DrawerFooter>
                 </DrawerContent>
             </Drawer>
