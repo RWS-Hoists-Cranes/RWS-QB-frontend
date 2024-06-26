@@ -24,6 +24,7 @@ import PickCustomer from "./pickCustomer";
 import { useState } from "react";
 import { startOfMonth, endOfMonth, startOfDay } from 'date-fns';
 import { ErrorAlert, SuccessAlert } from "./CustomAlert";
+import PickService from "./pickService";
 
 export default function FilterDrawer() {
     const [dateRange, setDateRange] = useState(() => {
@@ -40,6 +41,8 @@ export default function FilterDrawer() {
 
     const [customer, setCustomer] = useState('');
 
+    const [service, setService] = useState('');
+
     const [errorMessage, setErrorMessage] = useState('');
 
     async function printForm() {
@@ -51,7 +54,7 @@ export default function FilterDrawer() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ dateRange, territory, reportType: selectedForm, customer }),
+                body: JSON.stringify({ dateRange, territory, reportType: selectedForm, customer, service }),
             })
 
             if (!response.ok) {
@@ -111,12 +114,20 @@ export default function FilterDrawer() {
                             </AccordionContent>
                         </AccordionItem>
 
+                        <AccordionItem value="pick-service">
+                            <AccordionTrigger>Pick service</AccordionTrigger>
+                            <AccordionContent>
+                                <PickService value={service} setValue={setService}/>
+                            </AccordionContent>
+                        </AccordionItem>
+
                         <AccordionItem value="pick-form">
                             <AccordionTrigger>Pick Form</AccordionTrigger>
                             <AccordionContent>
                                 <PickForm selectedForm={selectedForm} setSelectedForm={setSelectedForm} />
                             </AccordionContent>
                         </AccordionItem>
+
                     </Accordion>
                     <DrawerFooter>
                         <DrawerClose>
