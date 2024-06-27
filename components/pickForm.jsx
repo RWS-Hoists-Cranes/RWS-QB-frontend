@@ -38,6 +38,11 @@ export default function PickForm({ selectedForm, setSelectedForm }) {
                     <Label htmlFor="receivables">Accounts Receivable List</Label>
                 </div>
 
+                <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="account-statement" id="account-statement" />
+                    <Label htmlFor="account-statement">Customer Account Statement</Label>
+                </div>
+
             </RadioGroup>
         </>
     )
