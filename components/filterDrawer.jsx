@@ -47,7 +47,12 @@ export default function FilterDrawer() {
 
     async function printForm() {
 
-        console.log(dateRange);
+        if (selectedForm === 'account-statement' && customer === '') {
+            setErrorMessage("Please select a Customer to get their Account Statement");
+            return;
+        }
+
+
         try {
             const response = await fetch('http://localhost:8080/api/filteredForm', {
                 method: 'POST',
