@@ -40,6 +40,14 @@ export default function EstimatePopup({ estimate }) {
 
     const itemQuantityOrdered = {};
 
+    const initializeItemDelivery = (estimate) => {
+        const initialItemDelivery = {};
+        estimate.Line.slice(0, estimate.Line.length - 1).forEach((line) => {
+            initialItemDelivery[line.SalesItemLineDetail.ItemRef.name] = '';
+        });
+        return initialItemDelivery;
+    };
+
     useEffect(() => {
         const quotationNumber = estimate.DocNumber;
 
@@ -66,6 +74,9 @@ export default function EstimatePopup({ estimate }) {
 
         postEstimate();
         populateEstimateInfo();
+        if (estimate && estimate.Line) {
+            setItemDelivery(initializeItemDelivery(estimate));
+        }
     }, []);
 
 
@@ -74,7 +85,7 @@ export default function EstimatePopup({ estimate }) {
     const handleDeliveryChange = (itemName, value) => {
         setItemDelivery((prevValues) => ({
             ...prevValues,
-            [itemName]: value,
+            [itemName]: value || '',
         }));
     };
 
@@ -288,14 +299,14 @@ export default function EstimatePopup({ estimate }) {
                                             <TableCell className="font-medium">{line.SalesItemLineDetail.ItemRef.name}</TableCell>
                                             <TableCell className="w-full">{line.Description}</TableCell>
                                             <TableCell className="text-right">
-                                                <textarea
-                                                    type="text"
-                                                    value={itemDelivery[line.SalesItemLineDetail.ItemRef.name] || ''}
-                                                    onChange={(e) =>
-                                                        handleDeliveryChange(line.SalesItemLineDetail.ItemRef.name, e.target.value)
-                                                    }
-                                                    className="min-h-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                />
+                                            <textarea
+                                                type="text"
+                                                value={itemDelivery[line.SalesItemLineDetail.ItemRef.name]}
+                                                onChange={(e) =>
+                                                    handleDeliveryChange(line.SalesItemLineDetail.ItemRef.name, e.target.value)
+                                                }
+                                                className="min-h-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            />
                                             </TableCell>
                                         </TableRow>
                                     )
