@@ -1,6 +1,6 @@
 'use client'
 import { Check, ChevronsUpDown } from "lucide-react"
-
+import { useRouter } from "next/navigation"
 import {
     Table,
     TableBody,
@@ -34,7 +34,6 @@ import {
 import { Label } from "@radix-ui/react-label"
 import { Input } from "./ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 
 import {
@@ -71,6 +70,8 @@ const frameworks = [
 ]
 
 export default function OrderPopup({ order }) {
+    const router = useRouter();
+
     const [orderNumber, setOrderNumber] = useState(order.order_number);
     const [customerPO, setCustomerPO] = useState(order.customer_PO);
     const [shippingMethod, setShippingMethod] = useState(order.shipping_method);
@@ -206,6 +207,11 @@ export default function OrderPopup({ order }) {
                                     e.stopPropagation();
                                     printBackOrder()
                                 }}>Print Back Order</DropdownMenuItem>
+                                <DropdownMenuItem onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    router.push(`/invoice?est_id=${quotationNumber}`);
+                                }}>Create an invoice</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
 
