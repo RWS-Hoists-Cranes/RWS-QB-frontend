@@ -210,7 +210,7 @@ export default function OrderPopup({ order }) {
                                 <DropdownMenuItem onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    router.push(`/invoice?est_id=${quotationNumber}`);
+                                    router.push(`/invoice?estimate_no=${quotationNumber}&estimate_id=${order.estimate.Id}`);
                                 }}>Create an invoice</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>

@@ -14,11 +14,12 @@ export default function CreateInvoices() {
     const searchParams = useSearchParams();
     const router = useRouter()
     const { toast } = useToast()
-    const estimateId = searchParams.get('est_id')
+    const estimateNum = searchParams.get('estimate_no')
+    const estimateId = searchParams.get('estimate_id')
 
     useEffect(() => {
         const fetchOrder = async () => {
-            if (!estimateId) {
+            if (!estimateNum) {
                 toast({
                     title: "Error",
                     description: "No estimate ID provided",
@@ -29,18 +30,20 @@ export default function CreateInvoices() {
             }
 
             try {
-                const response = await fetch(`http://localhost:8080/api/order?estimate_id=${estimateId}`);
+                const response = await fetch(`http://localhost:8080/api/order?estimate_id=${estimateNum}`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch order');
                 }
                 const data = await response.json();
                 setOrder(data);
+                console.log(data);
 
                 const lines = data.estimate.Line;
 
                 setLineItems(lines.slice(0, lines.length - 1).map((lineItem) => {
                     return (
                         {
+                            id: lineItem.SalesItemLineDetail.ItemRef.value,
                             name: lineItem.SalesItemLineDetail.ItemRef.name,
                             description: lineItem.Description,
                             unitPrice: lineItem.SalesItemLineDetail.UnitPrice,
@@ -62,14 +65,10 @@ export default function CreateInvoices() {
         };
 
         fetchOrder();
-    }, [estimateId]);
+    }, [estimateNum]);
 
     const [invoiceNo, setInvoiceNo] = useState('')
-    const [lineItems, setLineItems] = useState([
-        { id: '1', description: 'Widget A', unitPrice: 10, quantity: 5, totalOrdered: 10 },
-        { id: '2', description: 'Gadget B', unitPrice: 20, quantity: 3, totalOrdered: 5 },
-        { id: '3', description: 'Tool C', unitPrice: 15, quantity: 2, totalOrdered: 4 },
-    ])
+    const [lineItems, setLineItems] = useState([])
 
     const handleQuantityChange = (id, newQuantity) => {
         console.log(lineItems);
@@ -97,11 +96,9 @@ export default function CreateInvoices() {
         }
 
         try {
-            const invoiceData = await constructInvoice(invoiceNo, lineItems, estimateId)
+            const invoiceData = await constructInvoice(order.estimate.CustomerRef.value, invoiceNo, lineItems, estimateId)
             const htmlContent = await fetchHtmlContent(invoiceData)
 
-            // Here you might want to do something with the htmlContent,
-            // such as displaying it or sending it to another component
 
             toast({
                 title: "Success",
@@ -113,11 +110,37 @@ export default function CreateInvoices() {
         } catch (error) {
             toast({
                 title: "Error",
-                description: "Failed to create invoice: " + error.message,
+                description: "Failed to create invoice: Ensure that invoice number is unique.",
                 variant: "destructive",
             })
         }
     }
+
+    const fetchHtmlContent = async (invoiceData) => {
+        try {
+            await saveData();
+            const response = await fetch('http://localhost:8080/api/invoiceHtml', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ invoice: invoiceData, gst: "Doesn't matter" }),
+            });
+            const html = await response.text();
+            openHtmlInNewTab(html)
+        } catch (error) {
+            console.error('Error fetching HTML:', error);
+        }
+    };
+
+
+    const openHtmlInNewTab = (htmlContent) => {
+        const newWindow = window.open('');
+        newWindow.document.write(htmlContent);
+        newWindow.print();
+        newWindow.close();
+    };
+
 
     return (
         <Card className="w-full max-w-7xl mx-auto mt-8">
@@ -136,7 +159,7 @@ export default function CreateInvoices() {
                     />
                 </div>
                 <div className="mb-4">
-                    <p className="text-sm text-gray-500">Estimate ID: {estimateId}</p>
+                    <p className="text-sm text-gray-500">Estimate ID: {estimateNum}</p>
                 </div>
                 <Table>
                     <TableHeader>
@@ -183,13 +206,31 @@ export default function CreateInvoices() {
     )
 }
 
-// These functions are placeholders and should be replaced with your actual implementations
-async function constructInvoice(invoiceNo, lineItems, estimateId) {
-    // Implement your logic here
-    return { invoiceNo, lineItems, estimateId }
-}
+async function constructInvoice(customerId, invoiceNo, lineItems, estimateId) {
+    try {
+        const response = await fetch('http://localhost:8080/api/create-invoice', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                customerId,
+                invoiceNo,
+                lineItems,
+                estimateId,
+            }),
+        });
 
-async function fetchHtmlContent(invoiceData) {
-    // Implement your logic here
-    return "<html>...</html>"
+        if (!response.ok) {
+            throw new Error('Failed to create invoice');
+        }
+
+        console.log(response);
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error constructing invoice:', error);
+        throw error;
+    }
 }

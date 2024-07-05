@@ -82,6 +82,7 @@ export default function Estimate() {
                 // Finally, fetch and set invoices
                 const invoicesResponse = await fetch('http://localhost:8080/api/invoices');
                 const invoicesData = await invoicesResponse.json();
+                console.log("invoicesData", invoicesData);
                 setInvoices(invoicesData || []);
 
             } catch (error) {
