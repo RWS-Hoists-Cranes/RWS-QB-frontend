@@ -69,7 +69,7 @@ const frameworks = [
     }
 ]
 
-export default function OrderPopup({ order }) {
+export default function OrderPopup({ order, onUpdate }) {
     const router = useRouter();
 
     const [orderNumber, setOrderNumber] = useState(order.order_number);
@@ -99,6 +99,8 @@ export default function OrderPopup({ order }) {
                     billing_type: billingType,
                 }),
             });
+
+            if (onUpdate) onUpdate();
 
             if (!response.ok) {
                 throw new Error('Network response was not ok');

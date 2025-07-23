@@ -22,76 +22,97 @@ export default function Estimate() {
   const [orders, setOrders] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const [reload, setReload] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState(Date.now());
 
-  // useEffect(() => {
-  //     async function getEstimates() {
-  //         const response = await fetch('http://localhost:8080/api/estimates');
+  // Separate useEffect for each form
+  useEffect(() => {
+    async function fetchOrders() {
+      try {
+        const response = await fetch("http://localhost:8080/api/orders");
+        if (!response.ok) {
+          throw new Error("Failed to fetch orders");
+        }
+        const data = await response.json();
+        console.log("Orders data:", data);
+        const ordersData = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.data)
+          ? data.data
+          : [];
+        setOrders(ordersData);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+        setOrders([]);
+      }
+    }
 
-  //         const data = await response.json();
-  //         setEstimates(data.QueryResponse.Estimate || []);
-  //     };
+    fetchOrders();
+  }, [reload, lastUpdate]);
 
-  //     getEstimates();
-  // }, [reload]);
+  useEffect(() => {
+    async function fetchInvoices() {
+      try {
+        const response = await fetch("http://localhost:8080/api/invoices");
+        if (!response.ok) {
+          throw new Error("Failed to fetch invoices");
+        }
+        const data = await response.json();
+        console.log("Invoices data:", data);
+        const invoicesData = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.data)
+          ? data.data
+          : [];
+        setInvoices(invoicesData);
+      } catch (error) {
+        console.error("Error fetching invoices:", error);
+        setInvoices([]);
+      }
+    }
 
-  // useEffect(() => {
-  //     async function getOrders() {
-  //         const response = await fetch('http://localhost:8080/api/orders');
+    fetchInvoices();
+  }, [reload, lastUpdate]);
 
-  //         const data = await response.json();
-  //         setOrders(data || []);
-  //     };
-
-  //     getOrders();
-  // }, [reload]);
-
-  // useEffect(() => {
-
-  // })
-
-  // useEffect(() => {
-  //     async function getInvoices() {
-  //         const response = await fetch('http://localhost:8080/api/invoices');
-
-  //         const data = await response.json();
-  //         setInvoices(data || []);
-  //     };
-
-  //     getInvoices();
-  // }, [reload]);
   useEffect(() => {
     async function fetchData() {
       try {
-        // First, fetch and set estimates
         const estimatesResponse = await fetch(
           "http://localhost:8080/api/estimates"
         );
-        const estimatesData = await estimatesResponse.json();
-        setEstimates(estimatesData.QueryResponse.Estimate || []);
+        console.log("Estimates response:", estimatesResponse.status);
 
-        // After estimates are fetched, fetch and set orders
-        const ordersResponse = await fetch("http://localhost:8080/api/orders");
-        const ordersData = await ordersResponse.json();
-        setOrders(Array.isArray(ordersData) ? ordersData : []);
+        if (estimatesResponse.ok) {
+          const estimatesText = await estimatesResponse.text();
+          console.log("Raw estimates:", estimatesText);
 
-        // Finally, fetch and set invoices
-        const invoicesResponse = await fetch(
-          "http://localhost:8080/api/invoices"
-        );
-        const invoicesData = await invoicesResponse.json();
-        console.log("invoicesData", invoicesData);
-        setInvoices(Array.isArray(invoicesData) ? invoicesData : []);
+          if (estimatesText) {
+            const estimatesData = JSON.parse(estimatesText);
+            console.log("Parsed estimates:", estimatesData);
+            setEstimates(estimatesData.data || []);
+          } else {
+            setEstimates([]);
+          }
+        } else {
+          setEstimates([]);
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
-        // Handle error (e.g., set an error state)
+        setEstimates([]);
+        setOrders([]);
+        setInvoices([]);
       }
     }
 
     fetchData();
-  }, [reload]);
+  }, [reload, lastUpdate]);
 
   const handleTabClick = () => {
-    setReload(!reload);
+    setReload((prev) => !prev);
+  };
+
+  const handleUpdate = () => {
+    setLastUpdate(Date.now());
+    setReload((prev) => !prev);
   };
 
   return (
@@ -124,7 +145,11 @@ export default function Estimate() {
               </TableHeader>
               <TableBody>
                 {estimates.map((estimate) => (
-                  <EstimatePopup estimate={estimate} key={estimate.Id} />
+                  <EstimatePopup
+                    estimate={estimate}
+                    key={estimate.Id}
+                    onUpdate={handleUpdate}
+                  />
                 ))}
               </TableBody>
             </Table>
@@ -144,7 +169,11 @@ export default function Estimate() {
               </TableHeader>
               <TableBody>
                 {orders.map((order, index) => (
-                  <OrderPopup order={order} key={index} />
+                  <OrderPopup
+                    order={order}
+                    key={index}
+                    onUpdate={handleUpdate}
+                  />
                 ))}
               </TableBody>
             </Table>
@@ -164,7 +193,12 @@ export default function Estimate() {
               </TableHeader>
               <TableBody>
                 {invoices.map((invoice, index) => (
-                  <InvoicePopup invoice={invoice} key={index} index={index} />
+                  <InvoicePopup
+                    invoice={invoice}
+                    key={index}
+                    index={index}
+                    onUpdate={handleUpdate}
+                  />
                 ))}
               </TableBody>
             </Table>
