@@ -28,6 +28,65 @@ import { useEffect, useState } from "react";
 export default function InvoicePopup({ invoice, index, onUpdate }) {
   const [gst, setGst] = useState(invoice.invoice?.gst_number || "");
 
+  // populate db
+  useEffect(() => {
+    const syncInvoice = async () => {
+      try {
+        // First sync invoice to database
+        const QBResponse = await fetch("http://localhost:8080/api/invoices", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!QBResponse.ok) {
+          throw new Error("Failed to fetch invoices");
+        }
+
+        const invoices = await QBResponse.json();
+        console.log("Fetched Invoices", invoices);
+
+        const currentInvoice = invoices.find(
+          (inv) =>
+            (inv.DocNumber && inv.DocNumber === invoice.DocNumber) ||
+            (inv.invoice_number && inv.invoice_number === invoice.DocNumber)
+        );
+        console.log("Current Invoice", currentInvoice);
+        if (!currentInvoice) {
+          console.log("Invoice not found in QB");
+          return;
+        }
+
+        const response = await fetch("http://localhost:8080/api/invoice", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            invoice_number: invoice.DocNumber,
+            gst: currentInvoice.gst || invoice.gst, // Prefer QB value if available
+            quotation_number: invoice.quotation_number,
+            QBData: currentInvoice,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Failed to update invoice in DB: ${errorText}`);
+        }
+
+        console.log("Synced invoice from QuickBooks to database");
+        // Update local state if needed
+        if (onUpdate) onUpdate();
+      } catch (error) {
+        console.error("Error syncing invoice:", error);
+      }
+    };
+
+    syncInvoice();
+  }, []);
+
   const saveData = async () => {
     try {
       const linePromises = invoice.Line.slice(0, invoice.Line.length - 1).map(
@@ -65,7 +124,7 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
 
       await Promise.all(linePromises);
 
-      const response = await fetch("http://localhost:8080/api/updateGst", {
+      const response = await fetch("http://localhost:8080/api/invoice", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

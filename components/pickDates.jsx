@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 
 export default function PickDates({ dateRange, setDateRange }) {
 
+    const currentYear = new Date().getFullYear();
 
     return (
         <div>
@@ -12,8 +13,10 @@ export default function PickDates({ dateRange, setDateRange }) {
                 selected={dateRange}
                 onSelect={setDateRange}
                 className="rounded-md border max-w-fit mx-auto"
-
-                captionLayout="dropdown-buttons" fromYear={1997} toYear={2024} />
+                captionLayout="dropdown-buttons" 
+                fromYear={1997} 
+                toYear={currentYear + 1} 
+            />
             <div className="mt-4">
                 Selected Range: {dateRange?.from && format(dateRange.from, 'PP')} - {dateRange?.to && format(dateRange.to, 'PP')}
             </div>

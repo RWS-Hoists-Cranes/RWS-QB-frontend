@@ -24,7 +24,7 @@ export default function Estimate() {
   const [reload, setReload] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(Date.now());
 
-  // Separate useEffect for each form
+  // Separate useEffect for each of the forms
   useEffect(() => {
     async function fetchOrders() {
       try {
@@ -56,6 +56,7 @@ export default function Estimate() {
         if (!response.ok) {
           throw new Error("Failed to fetch invoices");
         }
+        
         const data = await response.json();
         console.log("Invoices data:", data);
         const invoicesData = Array.isArray(data)

@@ -36,22 +36,29 @@ export default function FilterDrawer() {
   });
 
   const [territory, setTerritory] = useState("");
-
   const [selectedForm, setSelectedForm] = useState("invoice-report");
-
   const [customer, setCustomer] = useState("");
-
   const [service, setService] = useState("");
-
   const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   async function printForm() {
+    // Input validation
     if (selectedForm === "account-statement" && customer === "") {
       setErrorMessage(
         "Please select a Customer to get their Account Statement"
       );
       return;
     }
+
+    if (!dateRange?.from || !dateRange?.to) {
+      setErrorMessage("Please select a valid date range");
+      return;
+    }
+
+    // Clear previous error messages and set loading state
+    setErrorMessage("");
+    setIsLoading(true);
 
     try {
       const response = await fetch("http://localhost:8080/api/filteredForm", {
@@ -69,14 +76,19 @@ export default function FilterDrawer() {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(
+          `HTTP error! status: ${response.status} - ${errorText}`
+        );
       }
 
       const html = await response.text();
       openHtmlInNewTab(html);
     } catch (error) {
       console.error("Error printing filtered form", error);
-      setErrorMessage("Cannot print the filtered form");
+      setErrorMessage(`Cannot print the filtered form: ${error.message}`);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -147,7 +159,9 @@ export default function FilterDrawer() {
           </Accordion>
           <DrawerFooter>
             <DrawerClose>
-              <Button onClick={printForm}>Print Form</Button>
+              <Button onClick={printForm} disabled={isLoading}>
+                {isLoading ? "Generating Report..." : "Print Form"}
+              </Button>
             </DrawerClose>
           </DrawerFooter>
         </DrawerContent>
