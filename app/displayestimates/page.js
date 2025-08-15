@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import OrderPopup from "@/components/orderPopup";
 import InvoicePopup from "@/components/invoicePopup";
 import FilterDrawer from "@/components/filterDrawer";
+import PurchaseOrderPopup from "@/components/purchaseOrderPopup";
 
 export default function Estimate() {
   const [estimates, setEstimates] = useState([]);
@@ -23,6 +24,7 @@ export default function Estimate() {
   const [invoices, setInvoices] = useState([]);
   const [reload, setReload] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(Date.now());
+  const [purchaseOrders, setPurchaseOrders] = useState([]);
 
   // Separate useEffect for each of the forms
   useEffect(() => {
@@ -56,7 +58,7 @@ export default function Estimate() {
         if (!response.ok) {
           throw new Error("Failed to fetch invoices");
         }
-        
+
         const data = await response.json();
         console.log("Invoices data:", data);
         const invoicesData = Array.isArray(data)
@@ -107,6 +109,32 @@ export default function Estimate() {
     fetchData();
   }, [reload, lastUpdate]);
 
+  useEffect(() => {
+    async function fetchPurchaseOrders() {
+      try {
+        const response = await fetch(
+          "http://localhost:8080/api/purchaseorders"
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch purchase orders");
+        }
+        const data = await response.json();
+        console.log("Purchase Orders data:", data);
+        const purchaseOrdersData = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.data)
+          ? data.data
+          : [];
+        setPurchaseOrders(purchaseOrdersData);
+      } catch (error) {
+        console.error("Error fetching purchase orders:", error);
+        setPurchaseOrders([]);
+      }
+    }
+
+    fetchPurchaseOrders();
+  }, [reload, lastUpdate]);
+
   const handleTabClick = () => {
     setReload((prev) => !prev);
   };
@@ -120,9 +148,12 @@ export default function Estimate() {
     <>
       <FilterDrawer />
       <Tabs defaultValue="quotes">
-        <TabsList className="grid w-1/3 mx-auto grid-cols-3 my-4">
+        <TabsList className="grid w-1/2 mx-auto grid-cols-4 my-4">
           <TabsTrigger value="quotes" onClick={handleTabClick}>
             Quotes
+          </TabsTrigger>
+          <TabsTrigger value="purchase_order" onClick={handleTabClick}>
+            Purchase Order
           </TabsTrigger>
           <TabsTrigger value="order_form" onClick={handleTabClick}>
             Order Form
@@ -157,6 +188,30 @@ export default function Estimate() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="purchase_order">
+          <Card className="w-3/4 mx-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[300px]">PO No.</TableHead>
+                  <TableHead>Vendor</TableHead>
+                  <TableHead>Related Order</TableHead>
+                  <TableHead className="text-right">Date Ordered</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {purchaseOrders.map((po, index) => (
+                  <PurchaseOrderPopup
+                    purchaseOrder={po}
+                    key={po.DocNumber || index}
+                    onUpdate={handleUpdate}
+                  />
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="order_form">
           <Card className="w-3/4 mx-auto">
             <Table>
@@ -180,7 +235,6 @@ export default function Estimate() {
             </Table>
           </Card>
         </TabsContent>
-
         <TabsContent value="invoice">
           <Card className="w-3/4 mx-auto">
             <Table>
