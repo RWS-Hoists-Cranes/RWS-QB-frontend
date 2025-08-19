@@ -139,6 +139,7 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
           comments,
           dateOrdered,
           purchaseOrder,
+          billingType,
         }),
       });
 
@@ -296,7 +297,7 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
 
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">
-              Billing Type
+              Terms
             </Label>
             <RadioGroup
               defaultValue={billingType}
@@ -306,16 +307,16 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
               }}
             >
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="PREPAID" id="r1" />
-                <Label htmlFor="r1">PREPAID</Label>
+                <RadioGroupItem value="NET30" id="r1" />
+                <Label htmlFor="r1">NET 30</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="COLLECT" id="r2" />
-                <Label htmlFor="r2">COLLECT</Label>
+                <RadioGroupItem value="PREPAID" id="r2" />
+                <Label htmlFor="r2">PREPAID</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="PREPAID_CHARGE" id="r3" />
-                <Label htmlFor="r3">PREPAID & CHARGE</Label>
+                <RadioGroupItem value="COD" id="r3" />
+                <Label htmlFor="r3">COD</Label>
               </div>
             </RadioGroup>
           </div>

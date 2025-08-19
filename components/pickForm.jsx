@@ -28,16 +28,24 @@ export default function PickForm({ selectedForm, setSelectedForm }) {
         </div>
 
         <div className="flex items-center space-x-2">
-          <RadioGroupItem value="outstanding-order" id="outstanding-order" />
-          <Label htmlFor="outstanding-order">Outstanding Order</Label>
-        </div>
-
-        <div className="flex items-center space-x-2">
           <RadioGroupItem
             value="purchase-order-report"
             id="purchase-order-report"
           />
           <Label htmlFor="purchase-order-report">Purchase Order Report</Label>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem
+            value="purchase-order-summary"
+            id="purchase-order-summary"
+          />
+          <Label htmlFor="purchase-order-summary">Purchase Order Summary</Label>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="outstanding-order" id="outstanding-order" />
+          <Label htmlFor="outstanding-order">Outstanding Order</Label>
         </div>
 
         <div className="flex items-center space-x-2">
