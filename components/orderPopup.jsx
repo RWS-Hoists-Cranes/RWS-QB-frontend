@@ -209,14 +209,6 @@ export default function OrderPopup({ order, onUpdate }) {
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation();
-                    printBackOrder();
-                  }}
-                >
-                  Print Back Order
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation();
                     printPackingSlip();
                   }}
                 >
