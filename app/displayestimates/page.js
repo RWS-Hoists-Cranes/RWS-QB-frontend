@@ -195,7 +195,7 @@ export default function Estimate() {
                 <TableRow>
                   <TableHead className="w-[300px]">PO No.</TableHead>
                   <TableHead>Vendor</TableHead>
-                  <TableHead>Related Order</TableHead>
+                  <TableHead>R.W.S. JOB NO.</TableHead>
                   <TableHead className="text-right">Date Ordered</TableHead>
                 </TableRow>
               </TableHeader>

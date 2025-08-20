@@ -20,6 +20,12 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -166,60 +172,78 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
   };
 
   return (
-    <TableRow
-      onClick={() => fetchHtmlContent()}
-      className="cursor-pointer hover:bg-gray-100"
-    >
-      <TableCell className="font-medium">{invoice.DocNumber}</TableCell>
-      <TableCell className="">{invoice.order.customer_PO}</TableCell>
-      <TableCell className="">{invoice.order.order_number}</TableCell>
-      <TableCell className="text-right">
-        {invoice.order.date_ordered.split("T")[0]}
-      </TableCell>
-    </TableRow>
-    // <Dialog key={index} >
-    //     <DialogTrigger asChild>
-    //         <TableRow>
-    //             <TableCell className="font-medium">{invoice.DocNumber}</TableCell>
-    //             <TableCell className="">{invoice.order.customer_PO}</TableCell>
-    //             <TableCell className="">
-    //                 {invoice.order.order_number}
-    //             </TableCell>
-    //             <TableCell className="text-right">
-    //                 {invoice.order.date_ordered.split('T')[0]}
-    //             </TableCell>
-    //         </TableRow>
-    //     </DialogTrigger>
-    //     <DialogContent className="min-w-fit">
-    //         <DialogHeader>
-    //             <DialogTitle>Edit Invoice Information</DialogTitle>
-    //         </DialogHeader>
+    <Dialog key={index}>
+      <DialogTrigger asChild>
+        <TableRow className="cursor-pointer hover:bg-gray-100">
+          <TableCell className="font-medium">{invoice.DocNumber}</TableCell>
+          <TableCell className="">{invoice.order.customer_PO}</TableCell>
+          <TableCell className="">{invoice.order.order_number}</TableCell>
+          <TableCell className="text-right">
+            {invoice.order.date_ordered.split("T")[0]}
+          </TableCell>
+          <TableCell className="text-right">
+            <DropdownMenu>
+              <DropdownMenuTrigger onClick={(e) => e.stopPropagation()}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="1"></circle>
+                  <circle cx="19" cy="12" r="1"></circle>
+                  <circle cx="5" cy="12" r="1"></circle>
+                </svg>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fetchHtmlContent();
+                  }}
+                >
+                  Print Invoice
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </TableCell>
+        </TableRow>
+      </DialogTrigger>
+      <DialogContent className="min-w-fit">
+        <DialogHeader>
+          <DialogTitle>Edit Invoice Information</DialogTitle>
+        </DialogHeader>
 
-    //         <div className="grid gap-4 py-4">
-    //             <div className="grid grid-cols-4 items-center gap-4">
-    //                 <Label htmlFor="name" className="text-right">
-    //                     GST No.
-    //                 </Label>
-    //                 <Input
-    //                     value={gst}
-    //                     onChange={(e) => setGst(e.target.value)}
-    //                     className="col-span-3"
-    //                 />
-    //             </div>
-    //         </div>
-    //         <DialogFooter>
-    //             <DialogClose variant="outline" onClick={saveData} asChild>
-    //                 <Button variant="outline" onClick={saveData}>
-    //                     Save and Close
-    //                 </Button>
-    //             </DialogClose>
-    //             <DialogClose asChild>
-    //                 <Button type="submit" onClick={fetchHtmlContent}>
-    //                     Save and Print
-    //                 </Button>
-    //             </DialogClose>
-    //         </DialogFooter>
-    //     </DialogContent>
-    // </Dialog>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="name" className="text-right">
+              GST No.
+            </Label>
+            <Input
+              value={gst}
+              onChange={(e) => setGst(e.target.value)}
+              className="col-span-3"
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline" onClick={saveData}>
+              Save and Close
+            </Button>
+          </DialogClose>
+          <DialogClose asChild>
+            <Button type="submit" onClick={fetchHtmlContent}>
+              Save and Print Invoice
+            </Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
