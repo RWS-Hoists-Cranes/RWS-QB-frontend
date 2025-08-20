@@ -95,14 +95,6 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
 
   const saveData = async () => {
     try {
-      console.log("=== Frontend saveData called ===");
-      console.log("invoice.Id:", invoice.Id);
-      console.log(
-        "invoice.estimate?.quotation_number:",
-        invoice.estimate?.quotation_number
-      );
-      console.log("gst:", gst);
-
       const linePromises = invoice.Line.slice(0, invoice.Line.length - 1).map(
         async (line) => {
           const part_number = line.SalesItemLineDetail.ItemRef.name;
@@ -143,11 +135,7 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          invoiceId: invoice.Id,
-          gst,
-          quotation_number: invoice.estimate?.quotation_number,
-        }),
+        body: JSON.stringify({ invoiceId: invoice.Id, gst }),
       });
 
       const data = await response.json();
@@ -173,35 +161,6 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
       openHtmlInNewTab(html);
     } catch (error) {
       console.error("Error fetching HTML:", error);
-    }
-  };
-
-  const fetchBackOrderHtml = async () => {
-    try {
-      console.log("=== Frontend fetchBackOrderHtml called ===");
-      console.log("invoice.DocNumber:", invoice.DocNumber);
-      console.log(
-        "invoice.order?.quotation_number:",
-        invoice.order?.quotation_number
-      );
-      console.log(
-        "invoice.estimate?.quotation_number:",
-        invoice.estimate?.quotation_number
-      );
-      console.log("gst:", gst);
-
-      await saveData();
-      const response = await fetch("http://localhost:8080/api/backOrderHtml", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ invoice: invoice, gst: gst }),
-      });
-      const html = await response.text();
-      openHtmlInNewTab(html);
-    } catch (error) {
-      console.error("Error fetching back order HTML:", error);
     }
   };
 
@@ -250,14 +209,6 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
                 >
                   Print Invoice
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    fetchBackOrderHtml();
-                  }}
-                >
-                  Print Back Order
-                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </TableCell>
@@ -289,11 +240,6 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
           <DialogClose asChild>
             <Button type="submit" onClick={fetchHtmlContent}>
               Save and Print Invoice
-            </Button>
-          </DialogClose>
-          <DialogClose asChild>
-            <Button variant="outline" onClick={fetchBackOrderHtml}>
-              Print Back Order
             </Button>
           </DialogClose>
         </DialogFooter>
