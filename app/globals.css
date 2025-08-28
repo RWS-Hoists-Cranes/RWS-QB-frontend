@@ -160,3 +160,11 @@
 .rdp-vhidden {
   @apply hidden;
 }
+
+@media print {
+  img {
+    display: block !important;
+    max-width: 200% !important;
+    max-height: 200% !important;
+  }
+}

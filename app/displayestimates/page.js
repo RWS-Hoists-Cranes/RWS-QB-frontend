@@ -95,11 +95,9 @@ export default function Estimate() {
 
         if (estimatesResponse.ok) {
           const estimatesText = await estimatesResponse.text();
-          console.log("Raw estimates:", estimatesText);
 
           if (estimatesText) {
             const estimatesData = JSON.parse(estimatesText);
-            console.log("Parsed estimates:", estimatesData);
             setEstimates(estimatesData.data || []);
           } else {
             setEstimates([]);
@@ -230,7 +228,7 @@ export default function Estimate() {
                 onClick={handleTabClick}
                 className="flex items-center space-x-2 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-slate-700 py-3 px-4 text-sm font-medium"
               >
-                {tab.icon}
+                {}
                 <span className="hidden sm:inline">{tab.label}</span>
                 <span className="sm:hidden">{tab.label.split(" ")[0]}</span>
                 <Badge variant="secondary" className="ml-auto text-xs">

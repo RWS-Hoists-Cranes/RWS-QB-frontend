@@ -60,12 +60,12 @@ const frameworks = [
     label: "Our Truck",
   },
   {
-    value: "purolator",
-    label: "Purolator",
+    value: "pickup",
+    label: "Pickup",
   },
   {
-    value: "fedex",
-    label: "FedEx",
+    value: "other",
+    label: "Other",
   },
 ];
 
@@ -74,8 +74,18 @@ export default function OrderPopup({ order, onUpdate }) {
 
   const [orderNumber, setOrderNumber] = useState(order.order_number);
   const [customerPO, setCustomerPO] = useState(order.customer_PO);
-  const [shippingMethod, setShippingMethod] = useState(order.shipping_method);
-  const [billingType, setBillingType] = useState(order.billing_type);
+  const [shippingMethod, setShippingMethod] = useState(
+    order.shipping_method || "truck"
+  );
+  const [customShippingText, setCustomShippingText] = useState(
+    order.shipping_method &&
+      !["truck", "pickup"].includes(order.shipping_method)
+      ? order.shipping_method
+      : ""
+  );
+  const [billingType, setBillingType] = useState(
+    order.billing_type || "COLLECT"
+  );
   const [comments, setComments] = useState(order.comments);
   const [quotationNumber, setQuotationNumber] = useState(
     order.quotation_number
@@ -85,8 +95,22 @@ export default function OrderPopup({ order, onUpdate }) {
   const [openShipMethod, setOpenShipMethod] = useState(false);
   const [value, setValue] = useState("");
 
+  const shippingMethods = [
+    {
+      value: "pickup",
+      label: "Pickup",
+    },
+    {
+      value: "other",
+      label: "Other",
+    },
+  ];
+
   async function updateDatabase() {
     try {
+      const finalShippingMethod =
+        shippingMethod === "other" ? customShippingText : shippingMethod;
+
       const response = await fetch("http://localhost:8080/api/order", {
         method: "POST",
         headers: {
@@ -95,7 +119,7 @@ export default function OrderPopup({ order, onUpdate }) {
         body: JSON.stringify({
           order_number: orderNumber,
           quotation_number: quotationNumber,
-          shipping_method: shippingMethod,
+          shipping_method: finalShippingMethod,
           customer_PO: customerPO,
           comments: comments,
           billing_type: billingType,
@@ -117,6 +141,9 @@ export default function OrderPopup({ order, onUpdate }) {
   async function displayOrderHTML() {
     updateDatabase();
 
+    const finalShippingMethod =
+      shippingMethod === "other" ? customShippingText : shippingMethod;
+
     try {
       const response = await fetch("http://localhost:8080/api/orderHTML", {
         method: "POST",
@@ -126,7 +153,7 @@ export default function OrderPopup({ order, onUpdate }) {
         body: JSON.stringify({
           orderNumber,
           customerPO,
-          shippingMethod,
+          shippingMethod: finalShippingMethod,
           billingType,
           comments,
           quotationNumber,
@@ -144,11 +171,26 @@ export default function OrderPopup({ order, onUpdate }) {
   const openHtmlInNewTab = (htmlContent) => {
     const newWindow = window.open("");
     newWindow.document.write(htmlContent);
-    newWindow.print();
-    newWindow.close();
+    newWindow.document.close();
+
+    const checkReady = () => {
+      if (newWindow.document.readyState === "complete") {
+        setTimeout(() => {
+          newWindow.print();
+          newWindow.close();
+        }, 300);
+      } else {
+        setTimeout(checkReady, 100);
+      }
+    };
+
+    checkReady();
   };
 
   const printPackingSlip = async () => {
+    const finalShippingMethod =
+      shippingMethod === "other" ? customShippingText : shippingMethod;
+
     try {
       const response = await fetch(
         "http://localhost:8080/api/orderPackingSlipHTML",
@@ -160,7 +202,7 @@ export default function OrderPopup({ order, onUpdate }) {
           body: JSON.stringify({
             orderNumber,
             customerPO,
-            shippingMethod,
+            shippingMethod: finalShippingMethod,
             billingType,
             comments,
             quotationNumber,
@@ -313,12 +355,27 @@ export default function OrderPopup({ order, onUpdate }) {
             </Popover>
           </div>
 
+          {shippingMethod === "other" && (
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="customShipping" className="text-right">
+                Custom Shipping
+              </Label>
+              <Input
+                id="customShipping"
+                value={customShippingText}
+                onChange={(e) => setCustomShippingText(e.target.value)}
+                className="col-span-3"
+                placeholder="Enter custom shipping method"
+              />
+            </div>
+          )}
+
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">
               Billing Type
             </Label>
             <RadioGroup
-              defaultValue={billingType}
+              defaultValue={billingType || "COLLECT"}
               className="col-span-3 flex justify-between"
               onValueChange={(value) => {
                 setBillingType(value);

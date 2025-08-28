@@ -60,12 +60,12 @@ const shippingMethods = [
     label: "Our Truck",
   },
   {
-    value: "purolator",
-    label: "Purolator",
+    value: "pickup",
+    label: "Pickup",
   },
   {
-    value: "fedex",
-    label: "FedEx",
+    value: "other",
+    label: "Other",
   },
 ];
 
@@ -77,10 +77,16 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
     purchaseOrder.VendorRef?.name || ""
   );
   const [shippingMethod, setShippingMethod] = useState(
-    purchaseOrder.dbData?.shipping_method || ""
+    purchaseOrder.dbData?.shipping_method || "truck"
+  );
+  const [customShippingText, setCustomShippingText] = useState(
+    purchaseOrder.dbData?.shipping_method &&
+      !["truck", "pickup"].includes(purchaseOrder.dbData?.shipping_method)
+      ? purchaseOrder.dbData?.shipping_method
+      : ""
   );
   const [billingType, setBillingType] = useState(
-    purchaseOrder.dbData?.billing_type || ""
+    purchaseOrder.dbData?.billing_type || "COLLECT"
   );
   const [comments, setComments] = useState(
     purchaseOrder.dbData?.comments || ""
@@ -89,11 +95,20 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
     purchaseOrder.dbData?.order_number || ""
   );
   const [dateOrdered, setDateOrdered] = useState(purchaseOrder.TxnDate || "");
-
   const [openShipMethod, setOpenShipMethod] = useState(false);
+  const [isFreight, setIsFreight] = useState(
+    purchaseOrder.dbData?.isFreight || false
+  );
+  const [shipFrom, setShipFrom] = useState(
+    purchaseOrder.dbData?.ship_from || ""
+  );
+  const [shipTo, setShipTo] = useState(purchaseOrder.dbData?.ship_to || "");
 
   async function updateDatabase() {
     try {
+      const finalShippingMethod =
+        shippingMethod === "other" ? customShippingText : shippingMethod;
+
       const res = await fetch("http://localhost:8080/api/purchaseorder", {
         method: "POST",
         headers: {
@@ -103,21 +118,24 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
           po_number: poNumber,
           order_number: orderNumber,
           vendor_name: vendorName,
-          shipping_method: shippingMethod,
+          shipping_method: finalShippingMethod,
           comments: comments,
           billing_type: billingType,
+          isFreight: isFreight,
+          ship_from: shipFrom,
+          ship_to: shipTo,
         }),
       });
 
       if (onUpdate) onUpdate();
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (!res.ok) {
+        const errorData = await res.json();
         console.error("Error updating purchase order:", errorData);
         return;
       }
 
-      const data = await response.json();
+      const data = await res.json();
     } catch (error) {
       console.error("Error updating purchase order:", error);
     }
@@ -125,6 +143,9 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
 
   async function displayPurchaseOrderHTML() {
     updateDatabase();
+
+    const finalShippingMethod =
+      shippingMethod === "other" ? customShippingText : shippingMethod;
 
     try {
       const res = await fetch("http://localhost:8080/api/purchaseOrderHTML", {
@@ -135,11 +156,14 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
         body: JSON.stringify({
           poNumber,
           vendorName,
-          shippingMethod,
+          shippingMethod: finalShippingMethod,
           comments,
           dateOrdered,
           purchaseOrder,
           billingType,
+          isFreight,
+          ship_from: shipFrom,
+          ship_to: shipTo,
         }),
       });
 
@@ -153,8 +177,20 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
   const openHtmlInNewTab = (htmlContent) => {
     const newWindow = window.open("");
     newWindow.document.write(htmlContent);
-    newWindow.print();
-    newWindow.close();
+    newWindow.document.close();
+
+    const checkReady = () => {
+      if (newWindow.document.readyState === "complete") {
+        setTimeout(() => {
+          newWindow.print();
+          newWindow.close();
+        }, 300);
+      } else {
+        setTimeout(checkReady, 100);
+      }
+    };
+
+    checkReady();
   };
 
   return (
@@ -295,28 +331,43 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
             </Popover>
           </div>
 
+          {shippingMethod === "other" && (
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="customShipping" className="text-right">
+                Custom Shipping
+              </Label>
+              <Input
+                id="customShipping"
+                value={customShippingText}
+                onChange={(e) => setCustomShippingText(e.target.value)}
+                className="col-span-3"
+                placeholder="Enter custom shipping method"
+              />
+            </div>
+          )}
+
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">
               Terms
             </Label>
             <RadioGroup
-              defaultValue={billingType}
+              defaultValue={billingType || "COLLECT"}
               className="col-span-3 flex justify-between"
               onValueChange={(value) => {
                 setBillingType(value);
               }}
             >
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="NET30" id="r1" />
-                <Label htmlFor="r1">NET 30</Label>
+                <RadioGroupItem value="PREPAID" id="r1" />
+                <Label htmlFor="r1">PREPAID</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="PREPAID" id="r2" />
-                <Label htmlFor="r2">PREPAID</Label>
+                <RadioGroupItem value="COLLECT" id="r2" />
+                <Label htmlFor="r2">COLLECT</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="COD" id="r3" />
-                <Label htmlFor="r3">COD</Label>
+                <RadioGroupItem value="PREPAID_CHARGE" id="r3" />
+                <Label htmlFor="r3">PREPAID & CHARGE</Label>
               </div>
             </RadioGroup>
           </div>
@@ -332,6 +383,54 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
               onChange={(e) => setComments(e.target.value)}
             />
           </div>
+
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="freight" className="text-right">
+              Freight Order
+            </Label>
+            <div className="col-span-3 flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="freight"
+                checked={isFreight}
+                onChange={(e) => setIsFreight(e.target.checked)}
+                className="w-4 h-4"
+              />
+              <Label htmlFor="freight" className="text-sm">
+                This is a freight order
+              </Label>
+            </div>
+          </div>
+
+          {isFreight && (
+            <>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="shipFrom" className="text-right">
+                  Ship From
+                </Label>
+                <Input
+                  id="shipFrom"
+                  value={shipFrom}
+                  onChange={(e) => setShipFrom(e.target.value)}
+                  className="col-span-3"
+                  placeholder="Enter ship from details"
+                />
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="shipTo" className="text-right">
+                  Ship To
+                </Label>
+                <Input
+                  id="shipTo"
+                  value={shipTo}
+                  onChange={(e) => setShipTo(e.target.value)}
+                  className="col-span-3"
+                  placeholder="Enter ship to details"
+                />
+              </div>
+            </>
+          )}
         </div>
         <DialogFooter>
           <DialogClose asChild>

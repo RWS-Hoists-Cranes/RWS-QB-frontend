@@ -129,8 +129,20 @@ export default function FilterDrawer() {
   const openHtmlInNewTab = (htmlContent) => {
     const newWindow = window.open("");
     newWindow.document.write(htmlContent);
-    newWindow.print();
-    newWindow.close();
+    newWindow.document.close();
+
+    const checkReady = () => {
+      if (newWindow.document.readyState === "complete") {
+        setTimeout(() => {
+          newWindow.print();
+          newWindow.close();
+        }, 300);
+      } else {
+        setTimeout(checkReady, 100);
+      }
+    };
+
+    checkReady();
   };
 
   return (
@@ -176,7 +188,6 @@ export default function FilterDrawer() {
 
           <div
             className="flex-1 overflow-y-auto px-4"
-            style={{ paddingRight: "20px", marginRight: "-16px" }}
           >
             <Accordion
               type="multiple"

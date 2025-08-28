@@ -153,8 +153,20 @@ export default function CreateInvoices() {
   const openHtmlInNewTab = (htmlContent) => {
     const newWindow = window.open("");
     newWindow.document.write(htmlContent);
-    newWindow.print();
-    newWindow.close();
+    newWindow.document.close();
+
+    const checkReady = () => {
+      if (newWindow.document.readyState === "complete") {
+        setTimeout(() => {
+          newWindow.print();
+          newWindow.close();
+        }, 300);
+      } else {
+        setTimeout(checkReady, 100);
+      }
+    };
+
+    checkReady();
   };
 
   return (

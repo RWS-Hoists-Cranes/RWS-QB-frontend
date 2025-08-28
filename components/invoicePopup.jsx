@@ -208,8 +208,20 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
   const openHtmlInNewTab = (htmlContent) => {
     const newWindow = window.open("");
     newWindow.document.write(htmlContent);
-    newWindow.print();
-    newWindow.close();
+    newWindow.document.close();
+
+    const checkReady = () => {
+      if (newWindow.document.readyState === "complete") {
+        setTimeout(() => {
+          newWindow.print();
+          newWindow.close();
+        }, 300);
+      } else {
+        setTimeout(checkReady, 100);
+      }
+    };
+
+    checkReady();
   };
 
   return (
@@ -267,19 +279,6 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
         <DialogHeader>
           <DialogTitle>Edit Invoice Information</DialogTitle>
         </DialogHeader>
-
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              GST No.
-            </Label>
-            <Input
-              value={gst}
-              onChange={(e) => setGst(e.target.value)}
-              className="col-span-3"
-            />
-          </div>
-        </div>
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline" onClick={saveData}>
