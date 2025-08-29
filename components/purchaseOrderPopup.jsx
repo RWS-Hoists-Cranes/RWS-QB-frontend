@@ -408,11 +408,12 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
                 <Label htmlFor="shipFrom" className="text-right">
                   Ship From
                 </Label>
-                <Input
+                <Textarea
                   id="shipFrom"
                   value={shipFrom}
                   onChange={(e) => setShipFrom(e.target.value)}
                   className="col-span-3"
+                  rows="3"
                   placeholder="Enter ship from details"
                 />
               </div>
@@ -421,11 +422,12 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
                 <Label htmlFor="shipTo" className="text-right">
                   Ship To
                 </Label>
-                <Input
+                <Textarea
                   id="shipTo"
                   value={shipTo}
                   onChange={(e) => setShipTo(e.target.value)}
                   className="col-span-3"
+                  rows="3"
                   placeholder="Enter ship to details"
                 />
               </div>

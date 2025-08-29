@@ -205,7 +205,7 @@ export default function EstimatePopup({ estimate, onUpdate }) {
           status: !switchState,
         }),
       });
-      if (onUpdate) onUpdate();
+      if (onUpdate) onUpdate(); 
       const data = await response.json();
       setSwitchState(!switchState);
     } catch (error) {
