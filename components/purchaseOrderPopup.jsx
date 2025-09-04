@@ -57,7 +57,7 @@ import { useState } from "react";
 const shippingMethods = [
   {
     value: "truck",
-    label: "Our Truck",
+    label: "Your Truck",
   },
   {
     value: "pickup",
@@ -86,8 +86,9 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
       : ""
   );
   const [billingType, setBillingType] = useState(
-    purchaseOrder.dbData?.billing_type || "COLLECT"
+    purchaseOrder.dbData?.billing_type || "DAYS"
   );
+
   const [comments, setComments] = useState(
     purchaseOrder.dbData?.comments || ""
   );
@@ -103,6 +104,15 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
     purchaseOrder.dbData?.ship_from || ""
   );
   const [shipTo, setShipTo] = useState(purchaseOrder.dbData?.ship_to || "");
+  const [dimensions, setDimensions] = useState(
+    purchaseOrder.dbData?.dimensions || ""
+  );
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [pickupDate, setPickupDate] = useState(
+    purchaseOrder.dbData?.pickupDate
+      ? new Date(purchaseOrder.dbData.pickupDate).toISOString().slice(0, 16)
+      : ""
+  );
 
   async function updateDatabase() {
     try {
@@ -124,10 +134,10 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
           isFreight: isFreight,
           ship_from: shipFrom,
           ship_to: shipTo,
+          dimensions: dimensions,
+          pickupDate: pickupDate,
         }),
       });
-
-      if (onUpdate) onUpdate();
 
       if (!res.ok) {
         const errorData = await res.json();
@@ -135,7 +145,11 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
         return;
       }
 
-      const data = await res.json();
+      const updatedData = await res.json();
+      console.log("Database update successful:", updatedData.comments);
+
+      // Call onUpdate callback to refresh parent component data
+      if (onUpdate) onUpdate();
     } catch (error) {
       console.error("Error updating purchase order:", error);
     }
@@ -155,6 +169,7 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
         },
         body: JSON.stringify({
           poNumber,
+          orderNumber,
           vendorName,
           shippingMethod: finalShippingMethod,
           comments,
@@ -164,6 +179,8 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
           isFreight,
           ship_from: shipFrom,
           ship_to: shipTo,
+          dimensions: dimensions,
+          pickupDate: pickupDate,
         }),
       });
 
@@ -194,9 +211,9 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
   };
 
   return (
-    <Dialog key={poNumber}>
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} key={poNumber}>
       <DialogTrigger asChild>
-        <TableRow>
+        <TableRow onClick={() => setIsDialogOpen(true)}>
           <TableCell className="font-medium">{poNumber}</TableCell>
           <TableCell className="">{vendorName}</TableCell>
           <TableCell className="">{orderNumber}</TableCell>
@@ -236,104 +253,120 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
           </TableCell>
         </TableRow>
       </DialogTrigger>
-      <DialogContent className="min-w-fit">
+      <DialogContent className="min-w-fit max-w-4xl overflow-y-auto max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Edit Purchase Order Information</DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              PO Number
-            </Label>
-            <Input
-              value={poNumber}
-              onChange={(e) => setPoNumber(e.target.value)}
-              className="col-span-3"
-              disabled
-            />
+          <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-3 items-center gap-2">
+              <Label htmlFor="poNumber" className="text-right font-medium">
+                PO Number
+              </Label>
+              <Input
+                id="poNumber"
+                value={poNumber}
+                onChange={(e) => setPoNumber(e.target.value)}
+                className="col-span-2"
+                disabled
+              />
+            </div>
+            <div className="grid grid-cols-3 items-center gap-2">
+              <Label htmlFor="vendorName" className="text-right font-medium">
+                Vendor Info
+              </Label>
+              <Input
+                id="vendorName"
+                value={vendorName}
+                onChange={(e) => setVendorName(e.target.value)}
+                className="col-span-2"
+                disabled
+              />
+            </div>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Vendor Info
-            </Label>
-            <Input
-              value={vendorName}
-              onChange={(e) => setVendorName(e.target.value)}
-              className="col-span-3"
-              disabled
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Related Order No.
-            </Label>
-            <Input
-              value={orderNumber}
-              onChange={(e) => setOrderNumber(e.target.value)}
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Shipping Method
-            </Label>
-            <Popover open={openShipMethod} onOpenChange={setOpenShipMethod}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={openShipMethod}
-                  className="w-[300px] justify-between"
-                >
-                  {shippingMethod
-                    ? shippingMethods.find(
-                        (method) => method.value === shippingMethod
-                      )?.label
-                    : "Select shipping method..."}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[300px] p-0">
-                <Command>
-                  <CommandInput placeholder="Search shipping method..." />
-                  <CommandList>
-                    <CommandEmpty>No shipping method found.</CommandEmpty>
-                    <CommandGroup>
-                      {shippingMethods.map((method) => (
-                        <CommandItem
-                          key={method.value}
-                          value={method.value}
-                          onSelect={(currentValue) => {
-                            setShippingMethod(
-                              currentValue === shippingMethod
-                                ? ""
-                                : currentValue
-                            );
-                            setOpenShipMethod(false);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              shippingMethod === method.value
-                                ? "opacity-100"
-                                : "opacity-0"
-                            )}
-                          />
-                          {method.label}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+
+          <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-3 items-center gap-2">
+              <Label htmlFor="orderNumber" className="text-right font-medium">
+                R.W.S. JOB NO.
+              </Label>
+              <Input
+                id="orderNumber"
+                value={orderNumber}
+                onChange={(e) => setOrderNumber(e.target.value)}
+                className="col-span-2"
+              />
+            </div>
+            <div className="grid grid-cols-3 items-center gap-2">
+              <Label
+                htmlFor="shippingMethod"
+                className="text-right font-medium"
+              >
+                Shipping Method
+              </Label>
+              <div className="col-span-2">
+                <Popover open={openShipMethod} onOpenChange={setOpenShipMethod}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={openShipMethod}
+                      className="w-full justify-between"
+                    >
+                      {shippingMethod
+                        ? shippingMethods.find(
+                            (method) => method.value === shippingMethod
+                          )?.label
+                        : "Select shipping method..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0">
+                    <Command>
+                      <CommandInput placeholder="Search shipping method..." />
+                      <CommandList>
+                        <CommandEmpty>No shipping method found.</CommandEmpty>
+                        <CommandGroup>
+                          {shippingMethods.map((method) => (
+                            <CommandItem
+                              key={method.value}
+                              value={method.value}
+                              onSelect={(currentValue) => {
+                                setShippingMethod(
+                                  currentValue === shippingMethod
+                                    ? ""
+                                    : currentValue
+                                );
+                                setOpenShipMethod(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  shippingMethod === method.value
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                              {method.label}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
           </div>
 
           {shippingMethod === "other" && (
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="customShipping" className="text-right">
+              <Label
+                htmlFor="customShipping"
+                className="text-right font-medium"
+              >
                 Custom Shipping
               </Label>
               <Input
@@ -347,48 +380,55 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
           )}
 
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
+            <Label htmlFor="terms" className="text-right font-medium">
               Terms
             </Label>
             <RadioGroup
-              defaultValue={billingType || "COLLECT"}
-              className="col-span-3 flex justify-between"
+              defaultValue={billingType || "DAYS"}
+              className="col-span-3 flex justify-start gap-8"
               onValueChange={(value) => {
                 setBillingType(value);
               }}
             >
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="PREPAID" id="r1" />
-                <Label htmlFor="r1">PREPAID</Label>
+                <RadioGroupItem value="DAYS" id="r1" />
+                <Label htmlFor="r1" className="font-normal">
+                  30 DAYS
+                </Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="COLLECT" id="r2" />
-                <Label htmlFor="r2">COLLECT</Label>
+                <RadioGroupItem value="COD" id="r2" />
+                <Label htmlFor="r2" className="font-normal">
+                  COD
+                </Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="PREPAID_CHARGE" id="r3" />
-                <Label htmlFor="r3">PREPAID & CHARGE</Label>
+                <RadioGroupItem value="OTHER" id="r3" />
+                <Label htmlFor="r3" className="font-normal">
+                  OTHER
+                </Label>
               </div>
             </RadioGroup>
           </div>
 
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Comments
-            </Label>
-            <Textarea
-              placeholder="Type your message here."
-              className="col-span-3 resize-y overflow-auto"
-              value={comments}
-              onChange={(e) => setComments(e.target.value)}
-            />
-          </div>
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex items-center gap-4 w-full max-w-2xl">
+              <Label
+                htmlFor="comments"
+                className="font-medium whitespace-nowrap min-w-[100px] text-right"
+              >
+                Comments
+              </Label>
+              <Textarea
+                id="comments"
+                placeholder="Type your message here."
+                className="flex-1 resize-y overflow-auto"
+                value={comments}
+                onChange={(e) => setComments(e.target.value)}
+              />
+            </div>
 
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="freight" className="text-right">
-              Freight Order
-            </Label>
-            <div className="col-span-3 flex items-center space-x-2">
+            <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
                 id="freight"
@@ -396,55 +436,103 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
                 onChange={(e) => setIsFreight(e.target.checked)}
                 className="w-4 h-4"
               />
-              <Label htmlFor="freight" className="text-sm">
-                This is a freight order
+              <Label htmlFor="freight" className="text-sm font-medium">
+                Freight Order
               </Label>
             </div>
           </div>
 
           {isFreight && (
-            <>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="shipFrom" className="text-right">
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex items-center gap-4 w-full max-w-2xl">
+                <Label
+                  htmlFor="shipFrom"
+                  className="font-medium whitespace-nowrap min-w-[100px] text-right"
+                >
                   Ship From
                 </Label>
                 <Textarea
                   id="shipFrom"
                   value={shipFrom}
                   onChange={(e) => setShipFrom(e.target.value)}
-                  className="col-span-3"
+                  className="flex-1"
                   rows="3"
-                  placeholder="Enter ship from details"
+                  placeholder="Enter address name, phone #, and hours"
                 />
               </div>
 
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="shipTo" className="text-right">
+              <div className="flex items-center gap-4 w-full max-w-2xl">
+                <Label
+                  htmlFor="shipTo"
+                  className="font-medium whitespace-nowrap min-w-[100px] text-right"
+                >
                   Ship To
                 </Label>
                 <Textarea
                   id="shipTo"
                   value={shipTo}
                   onChange={(e) => setShipTo(e.target.value)}
-                  className="col-span-3"
+                  className="flex-1"
                   rows="3"
-                  placeholder="Enter ship to details"
+                  placeholder="Address name, phone #, and hours"
                 />
               </div>
-            </>
+
+              <div className="flex items-center gap-4 w-full max-w-2xl">
+                <Label
+                  htmlFor="dimensions"
+                  className="font-medium whitespace-nowrap min-w-[100px] text-right"
+                >
+                  Dimensions
+                </Label>
+                <Textarea
+                  id="dimensions"
+                  value={dimensions}
+                  onChange={(e) => setDimensions(e.target.value)}
+                  className="flex-1"
+                  rows="3"
+                  placeholder="Enter dimensions"
+                />
+              </div>
+
+              <div className="flex items-center gap-4 w-full max-w-2xl">
+                <Label
+                  htmlFor="dimensions"
+                  className="font-medium whitespace-nowrap min-w-[100px] text-right"
+                >
+                  Pickup
+                </Label>
+                <Input
+                  id="pickupDate"
+                  type="datetime-local"
+                  value={pickupDate}
+                  onChange={(e) => setPickupDate(e.target.value)}
+                  className="flex-1"
+                  placeholder="Enter pickup date and time"
+                />
+              </div>
+            </div>
           )}
         </div>
         <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline" onClick={updateDatabase}>
-              Save and Close
-            </Button>
-          </DialogClose>
-          <DialogClose asChild>
-            <Button type="submit" onClick={displayPurchaseOrderHTML}>
-              Save and Print
-            </Button>
-          </DialogClose>
+          <Button
+            variant="outline"
+            onClick={async () => {
+              await updateDatabase();
+              setIsDialogOpen(false);
+            }}
+          >
+            Save and Close
+          </Button>
+          <Button
+            type="submit"
+            onClick={async () => {
+              await displayPurchaseOrderHTML();
+              setIsDialogOpen(false);
+            }}
+          >
+            Save and Print
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
