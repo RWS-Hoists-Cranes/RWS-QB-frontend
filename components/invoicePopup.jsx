@@ -32,76 +32,49 @@ import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
 
 export default function InvoicePopup({ invoice, index, onUpdate }) {
-  const [gst, setGst] = useState(invoice.invoice?.gst_number || "");
+  // Debug: Log the entire invoice object to see its structure
+  console.log("=== InvoicePopup Debug: Full invoice object ===", invoice);
+
+  const [gst, setGst] = useState(invoice.gst_number || "");
+  const [customerPO, setCustomerPO] = useState(invoice.customer_po || "");
+  const [comments, setComments] = useState(invoice.comments || "");
+  const [shippingDate, setShippingDate] = useState(
+    invoice.shipping_date
+      ? new Date(invoice.shipping_date).toISOString().split("T")[0]
+      : ""
+  );
+
+  console.log("=== InvoicePopup Debug: Initial state values ===");
+  console.log("invoice.invoice:", invoice.invoice); // Check if invoice.invoice exists
 
   // populate db
   useEffect(() => {
-    const syncInvoice = async () => {
-      try {
-        // First sync invoice to database
-        const QBResponse = await fetch("http://localhost:8080/api/invoices", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!QBResponse.ok) {
-          throw new Error("Failed to fetch invoices");
-        }
-
-        const invoices = await QBResponse.json();
-        console.log("Fetched Invoices", invoices);
-
-        const currentInvoice = invoices.find(
-          (inv) =>
-            (inv.DocNumber && inv.DocNumber === invoice.DocNumber) ||
-            (inv.invoice_number && inv.invoice_number === invoice.DocNumber)
-        );
-        console.log("Current Invoice", currentInvoice);
-        if (!currentInvoice) {
-          console.log("Invoice not found in QB");
-          return;
-        }
-
-        const response = await fetch("http://localhost:8080/api/invoice", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            invoice_number: invoice.DocNumber,
-            gst: currentInvoice.gst || invoice.gst, // Prefer QB value if available
-            quotation_number: invoice.quotation_number,
-            QBData: currentInvoice,
-          }),
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Failed to update invoice in DB: ${errorText}`);
-        }
-
-        console.log("Synced invoice from QuickBooks to database");
-        // Update local state if needed
-        if (onUpdate) onUpdate();
-      } catch (error) {
-        console.error("Error syncing invoice:", error);
-      }
-    };
-
-    syncInvoice();
+    // Remove the automatic syncing that was causing duplicate invoices
+    // The invoice data should already be properly populated when this component loads
+    console.log("=== InvoicePopup Debug: Component mounted ===");
+    console.log("Invoice DocNumber:", invoice.DocNumber);
+    console.log("Current state values:", {
+      gst,
+      customerPO,
+      comments,
+      shippingDate,
+    });
   }, []);
 
   const saveData = async () => {
     try {
-      console.log("=== Frontend saveData called ===");
-      console.log("invoice.Id:", invoice.Id);
+      // Debug: Log what we're about to save
+      console.log("=== InvoicePopup Debug: saveData called ===");
+      console.log("Current state values being saved:");
+      console.log("  gst:", gst);
+      console.log("  customerPO:", customerPO);
+      console.log("  comments:", comments);
+      console.log("  shippingDate:", shippingDate);
+      console.log("  invoice.Id:", invoice.Id);
       console.log(
-        "invoice.estimate?.quotation_number:",
+        "  invoice.estimate?.quotation_number:",
         invoice.estimate?.quotation_number
       );
-      console.log("gst:", gst);
 
       const linePromises = invoice.Line.slice(0, invoice.Line.length - 1).map(
         async (line) => {
@@ -144,18 +117,25 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          invoiceId: invoice.Id,
-          gst,
+          invoice_number: invoice.DocNumber, // Use DocNumber instead of Id
+          gst: gst, // Keep as 'gst' to match backend expectation
           quotation_number: invoice.estimate?.quotation_number,
+          customer_po: customerPO,
+          comments: comments,
+          shipping_date: shippingDate || null,
         }),
       });
 
       const data = await response.json();
+
+      // Debug: Log the save response
+      console.log("=== InvoicePopup Debug: Save response ===", data);
+
       if (data.success && onUpdate) {
         onUpdate(); // Call onUpdate after successful save
       }
     } catch (error) {
-      console.log(error);
+      console.log("=== InvoicePopup Debug: Save error ===", error);
     }
   };
 
@@ -167,7 +147,14 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ invoice: invoice, gst: gst }),
+        body: JSON.stringify({
+          invoice: invoice,
+          gst: gst,
+          customer_po: customerPO,
+          comments: comments,
+          dateOrdered: invoice.order?.date_ordered,
+          shippingDate: shippingDate || invoice.order?.date_ordered,
+        }),
       });
       const html = await response.text();
       openHtmlInNewTab(html);
@@ -196,7 +183,14 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ invoice: invoice, gst: gst }),
+        body: JSON.stringify({
+          invoice: invoice,
+          gst: gst,
+          customer_po: customerPO,
+          comments: comments,
+          dateOrdered: invoice.order?.date_ordered,
+          shippingDate: shippingDate || invoice.order?.date_ordered,
+        }),
       });
       const html = await response.text();
       openHtmlInNewTab(html);
@@ -279,6 +273,43 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
         <DialogHeader>
           <DialogTitle>Edit Invoice Information</DialogTitle>
         </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="customer_po" className="text-right">
+              Customer P.O.
+            </Label>
+            <Input
+              id="customer_po"
+              value={customerPO}
+              onChange={(e) => setCustomerPO(e.target.value)}
+              className="col-span-3"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="shipping_date" className="text-right">
+              Shipping Date
+            </Label>
+            <Input
+              id="shipping_date"
+              type="date"
+              value={shippingDate}
+              onChange={(e) => setShippingDate(e.target.value)}
+              className="col-span-3"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="comments" className="text-right">
+              Comments
+            </Label>
+            <textarea
+              id="comments"
+              value={comments}
+              onChange={(e) => setComments(e.target.value)}
+              className="col-span-3 min-h-[100px] px-3 py-2 border border-gray-300 rounded-md"
+              placeholder="Enter comments..."
+            />
+          </div>
+        </div>
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline" onClick={saveData}>
