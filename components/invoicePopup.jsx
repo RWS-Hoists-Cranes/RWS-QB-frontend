@@ -32,9 +32,6 @@ import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
 
 export default function InvoicePopup({ invoice, index, onUpdate }) {
-  // Debug: Log the entire invoice object to see its structure
-  console.log("=== InvoicePopup Debug: Full invoice object ===", invoice);
-
   const [gst, setGst] = useState(invoice.gst_number || "");
   const [customerPO, setCustomerPO] = useState(invoice.customer_po || "");
   const [comments, setComments] = useState(invoice.comments || "");
@@ -44,38 +41,8 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
       : ""
   );
 
-  console.log("=== InvoicePopup Debug: Initial state values ===");
-  console.log("invoice.invoice:", invoice.invoice); // Check if invoice.invoice exists
-
-  // populate db
-  useEffect(() => {
-    // Remove the automatic syncing that was causing duplicate invoices
-    // The invoice data should already be properly populated when this component loads
-    console.log("=== InvoicePopup Debug: Component mounted ===");
-    console.log("Invoice DocNumber:", invoice.DocNumber);
-    console.log("Current state values:", {
-      gst,
-      customerPO,
-      comments,
-      shippingDate,
-    });
-  }, []);
-
   const saveData = async () => {
     try {
-      // Debug: Log what we're about to save
-      console.log("=== InvoicePopup Debug: saveData called ===");
-      console.log("Current state values being saved:");
-      console.log("  gst:", gst);
-      console.log("  customerPO:", customerPO);
-      console.log("  comments:", comments);
-      console.log("  shippingDate:", shippingDate);
-      console.log("  invoice.Id:", invoice.Id);
-      console.log(
-        "  invoice.estimate?.quotation_number:",
-        invoice.estimate?.quotation_number
-      );
-
       const linePromises = invoice.Line.slice(0, invoice.Line.length - 1).map(
         async (line) => {
           const part_number = line.SalesItemLineDetail.ItemRef.name;

@@ -484,6 +484,8 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
                   className="font-medium whitespace-nowrap min-w-[100px] text-right"
                 >
                   Dimensions
+                  <br />
+                  Weights
                 </Label>
                 <Textarea
                   id="dimensions"
