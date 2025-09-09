@@ -39,8 +39,17 @@ export default function EstimatePopup({ estimate, onUpdate }) {
   const [switchState, setSwitchState] = useState(
     estimate.TxnStatus === "Accepted" || estimate.TxnStatus === "Converted"
   );
-
   const itemQuantityOrdered = {};
+  const [itemQuantities, setItemQuantities] = useState({});
+
+  const initializeItemQuantity = (estimate) => {
+    const initialItemQuantities = {};
+    estimate.Line.slice(0, estimate.Line.length - 1).forEach((line) => {
+      initialItemQuantities[line.SalesItemLineDetail.ItemRef.name] =
+        line.SalesItemLineDetail.Qty;
+    });
+    return initialItemQuantities;
+  };
 
   const initializeItemDelivery = (estimate) => {
     const initialItemDelivery = {};
@@ -99,6 +108,13 @@ export default function EstimatePopup({ estimate, onUpdate }) {
           setTerm(data.term);
           setFob(data.fob);
           setItemDelivery(data.itemDelivery);
+
+          console.log("Fetched estimate data:", data);
+          if (data.itemQuantities) {
+            setItemQuantities(data.itemQuantities);
+          } else {
+            setItemQuantities(initializeItemQuantity(estimate));
+          }
         }
       } catch (error) {
         console.error("Error fetching estimate:", error);
@@ -120,6 +136,14 @@ export default function EstimatePopup({ estimate, onUpdate }) {
     }));
   };
 
+  const handleQuantityChange = (itemName, newQuantity) => {
+    const qty = Math.max(0, parseInt(newQuantity) || 0);
+    setItemQuantities((prevValues) => ({
+      ...prevValues,
+      [itemName]: qty,
+    }));
+  };
+
   const saveData = async () => {
     try {
       const response = await fetch("http://localhost:8080/api/estimate", {
@@ -138,6 +162,7 @@ export default function EstimatePopup({ estimate, onUpdate }) {
           fob,
           Id: estimate.Id,
           itemQuantityOrdered,
+          itemQuantities,
         }),
       });
       console.log("Successfully saved the data");
@@ -163,6 +188,7 @@ export default function EstimatePopup({ estimate, onUpdate }) {
           term,
           itemDelivery,
           fob,
+          itemQuantities,
         }),
       });
       const html = await response.text();
@@ -205,7 +231,7 @@ export default function EstimatePopup({ estimate, onUpdate }) {
           status: !switchState,
         }),
       });
-      if (onUpdate) onUpdate(); 
+      if (onUpdate) onUpdate();
       const data = await response.json();
       setSwitchState(!switchState);
     } catch (error) {
@@ -239,7 +265,7 @@ export default function EstimatePopup({ estimate, onUpdate }) {
               </TableCell>
             </TableRow>
           </DialogTrigger>
-          <DialogContent className="min-w-fit">
+          <DialogContent className="min-w-fit max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Edit Quote information</DialogTitle>
               <DialogDescription>
@@ -343,37 +369,51 @@ export default function EstimatePopup({ estimate, onUpdate }) {
                 <TableRow>
                   <TableHead className="w-[150px]">RWS Part No.</TableHead>
                   <TableHead className="w-full">Description</TableHead>
+                  <TableHead className="text-center w-[100px]">
+                    QB Qty
+                  </TableHead>
+                  <TableHead className="text-center w-[120px]">
+                    Order Qty
+                  </TableHead>
                   <TableHead className="text-right">Delivery</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {estimate.Line.slice(0, estimate.Line.length - 1).map(
                   (line) => {
-                    // <div>{line.SalesItemLineDetail.ItemRef.name}</div>
-                    itemQuantityOrdered[line.SalesItemLineDetail.ItemRef.name] =
-                      line.SalesItemLineDetail.Qty;
+                    const itemName = line.SalesItemLineDetail.ItemRef.name;
+                    const qbQuantity = line.SalesItemLineDetail.Qty;
+                    itemQuantityOrdered[itemName] =
+                      itemQuantities[itemName] || 0;
 
                     return (
                       <TableRow key={line.Id}>
                         <TableCell className="font-medium">
-                          {line.SalesItemLineDetail.ItemRef.name}
+                          {itemName}
                         </TableCell>
                         <TableCell className="w-full">
                           {line.Description}
                         </TableCell>
+                        <TableCell className="text-center font-medium text-gray-600">
+                          {qbQuantity}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Input
+                            type="number"
+                            min="0"
+                            value={itemQuantities[itemName] || 0}
+                            onChange={(e) =>
+                              handleQuantityChange(itemName, e.target.value)
+                            }
+                            className="w-16 text-center"
+                          />
+                        </TableCell>
                         <TableCell className="text-right">
                           <textarea
                             type="text"
-                            value={
-                              itemDelivery[
-                                line.SalesItemLineDetail.ItemRef.name
-                              ]
-                            }
+                            value={itemDelivery[itemName] || ""}
                             onChange={(e) =>
-                              handleDeliveryChange(
-                                line.SalesItemLineDetail.ItemRef.name,
-                                e.target.value
-                              )
+                              handleDeliveryChange(itemName, e.target.value)
                             }
                             className="min-h-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
