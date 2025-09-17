@@ -74,15 +74,36 @@ export default function OrderPopup({ order, onUpdate }) {
 
   const [orderNumber, setOrderNumber] = useState(order.order_number);
   const [customerPO, setCustomerPO] = useState(order.customer_PO);
-  const [shippingMethod, setShippingMethod] = useState(
-    order.shipping_method || "truck"
-  );
-  const [customShippingText, setCustomShippingText] = useState(
-    order.shipping_method &&
-      !["truck", "pickup"].includes(order.shipping_method)
-      ? order.shipping_method
-      : ""
-  );
+  const [shippingMethod, setShippingMethod] = useState(() => {
+    const dbShippingMethod = order.shipping_method;
+    if (!dbShippingMethod) return "truck";
+
+    // Check if the stored value is a framework value
+    const isFrameworkValue = frameworks.some(
+      (f) => f.value === dbShippingMethod
+    );
+    if (isFrameworkValue) return dbShippingMethod;
+
+    // Check if the stored value is a framework label (convert to value)
+    const frameworkByLabel = frameworks.find(
+      (f) => f.label === dbShippingMethod
+    );
+    if (frameworkByLabel) return frameworkByLabel.value;
+
+    // Otherwise it's a custom value, so use "other"
+    return "other";
+  });
+  const [customShippingText, setCustomShippingText] = useState(() => {
+    const dbShippingMethod = order.shipping_method;
+    if (!dbShippingMethod) return "";
+
+    // If it's not a standard framework value or label, it's custom text
+    const isStandardValue = frameworks.some(
+      (f) => f.value === dbShippingMethod || f.label === dbShippingMethod
+    );
+
+    return isStandardValue ? "" : dbShippingMethod;
+  });
   const [billingType, setBillingType] = useState(
     order.billing_type || "COLLECT"
   );
@@ -94,6 +115,28 @@ export default function OrderPopup({ order, onUpdate }) {
 
   const [openShipMethod, setOpenShipMethod] = useState(false);
   const [value, setValue] = useState("");
+  const [shipTo, setShipTo] = useState(() => {
+    if (order.ship_to) return order.ship_to;
+
+    // Default to estimate ship address
+    const shipAddr = order.estimate?.ShipAddr;
+    if (shipAddr) {
+      const lines = [
+        shipAddr.Line1,
+        shipAddr.Line2,
+        shipAddr.Line3,
+        shipAddr.City
+          ? `${shipAddr.City}${
+              shipAddr.CountrySubDivisionCode
+                ? ", " + shipAddr.CountrySubDivisionCode
+                : ""
+            } ${shipAddr.PostalCode || ""}`
+          : "",
+      ].filter(Boolean);
+      return lines.join("\n");
+    }
+    return "";
+  });
 
   const shippingMethods = [
     {
@@ -123,6 +166,7 @@ export default function OrderPopup({ order, onUpdate }) {
           customer_PO: customerPO,
           comments: comments,
           billing_type: billingType,
+          ship_to: shipTo,
         }),
       });
 
@@ -159,6 +203,7 @@ export default function OrderPopup({ order, onUpdate }) {
           quotationNumber,
           dateOrdered,
           order,
+          ship_to: shipTo,
         }),
       });
       const html = await response.text();
@@ -208,6 +253,7 @@ export default function OrderPopup({ order, onUpdate }) {
             quotationNumber,
             dateOrdered,
             order,
+            ship_to: shipTo,
           }),
         }
       );
@@ -279,6 +325,19 @@ export default function OrderPopup({ order, onUpdate }) {
 
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="shipTo" className="text-right">
+              Ship To Address
+            </Label>
+            <Textarea
+              id="shipTo"
+              placeholder="Enter ship to address..."
+              className="col-span-3 resize-y overflow-auto"
+              value={shipTo}
+              onChange={(e) => setShipTo(e.target.value)}
+            />
+          </div>
+
+          <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">
               RWS Order No.
             </Label>
@@ -310,11 +369,19 @@ export default function OrderPopup({ order, onUpdate }) {
                   aria-expanded={openShipMethod}
                   className="w-[300px] justify-between"
                 >
-                  {shippingMethod
-                    ? frameworks.find(
-                        (framework) => framework.value === shippingMethod
-                      )?.label
-                    : "Select shipping method..."}
+                  {(() => {
+                    if (!shippingMethod) return "Select shipping method...";
+
+                    // First try to find by value
+                    const found = frameworks.find(
+                      (framework) => framework.value === shippingMethod
+                    );
+
+                    if (found) return found.label;
+
+                    // If not found, it's likely a custom shipping method
+                    return shippingMethod;
+                  })()}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>

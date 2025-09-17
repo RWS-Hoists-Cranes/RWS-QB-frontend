@@ -47,7 +47,6 @@ export default function Estimate() {
           throw new Error("Failed to fetch orders");
         }
         const data = await response.json();
-        console.log("Orders data:", data);
         const ordersData = Array.isArray(data)
           ? data
           : Array.isArray(data?.data)
@@ -72,7 +71,6 @@ export default function Estimate() {
         }
 
         const data = await response.json();
-        console.log("Invoices data:", data);
         const invoicesData = Array.isArray(data)
           ? data
           : Array.isArray(data?.data)
@@ -94,8 +92,6 @@ export default function Estimate() {
         const estimatesResponse = await fetch(
           "http://localhost:8080/api/estimates"
         );
-        console.log("Estimates response:", estimatesResponse.status);
-
         if (estimatesResponse.ok) {
           const estimatesText = await estimatesResponse.text();
 
@@ -129,7 +125,6 @@ export default function Estimate() {
           throw new Error("Failed to fetch purchase orders");
         }
         const data = await response.json();
-        console.log("Purchase Orders data:", data);
         const purchaseOrdersData = Array.isArray(data)
           ? data
           : Array.isArray(data?.data)
@@ -158,8 +153,6 @@ export default function Estimate() {
     if (!searchTerm) return estimates;
 
     return estimates.filter((estimate) => {
-      console.log("estimate.TXNDate", estimate.TXNDate);
-      console.log(estimate);
       const searchLower = searchTerm.toLowerCase();
       return (
         estimate.CustomerRef?.name
@@ -174,27 +167,16 @@ export default function Estimate() {
 
   const filterOrders = (orders, searchTerm) => {
     if (!searchTerm) return orders;
-  
+
     return orders.filter((order) => {
-      // Add this debug log to see the full order structure
-      console.log("Full order object:", order);
-      
       const searchLower = searchTerm.toLowerCase();
-      
+
       // Check these specific fields
       const orderNumber = order.order_number?.toString().toLowerCase();
       const customerPO = order.customer_PO?.toString().toLowerCase();
       const quotationNumber = order.quotation_number?.toString().toLowerCase();
       const dateOrdered = order.date_ordered?.toString().toLowerCase();
-      
-      console.log("Search fields:", {
-        customerPO,
-        orderNumber,
-        quotationNumber,
-        dateOrdered,
-        searchLower
-      });
-      
+
       return (
         orderNumber?.includes(searchLower) ||
         customerPO?.includes(searchLower) ||
@@ -210,11 +192,23 @@ export default function Estimate() {
     return invoices.filter((invoice) => {
       const searchLower = searchTerm.toLowerCase();
       return (
-        invoice.invoice.invoice_number?.toString().toLowerCase().includes(searchLower) ||
+        invoice.invoice.invoice_number
+          ?.toString()
+          .toLowerCase()
+          .includes(searchLower) ||
         invoice.DocNumber?.toString().toLowerCase().includes(searchLower) ||
-        invoice.order?.customer_PO?.toString().toLowerCase().includes(searchLower) ||
-        invoice.order?.order_number?.toString().toLowerCase().includes(searchLower) ||
-        invoice.order?.date_ordered?.toString().toLowerCase().includes(searchLower)
+        invoice.order?.customer_PO
+          ?.toString()
+          .toLowerCase()
+          .includes(searchLower) ||
+        invoice.order?.order_number
+          ?.toString()
+          .toLowerCase()
+          .includes(searchLower) ||
+        invoice.order?.date_ordered
+          ?.toString()
+          .toLowerCase()
+          .includes(searchLower)
       );
     });
   };
@@ -259,20 +253,20 @@ export default function Estimate() {
       color: "bg-blue-500",
     },
     {
-      value: "purchase_order",
-      label: "Purchase Orders",
-      icon: <Package className="w-4 h-4" />,
-      count: filteredPurchaseOrders.length,
-      totalCount: purchaseOrders.length,
-      color: "bg-green-500",
-    },
-    {
       value: "order_form",
       label: "Order Forms",
       icon: <ShoppingCart className="w-4 h-4" />,
       count: filteredOrders.length,
       totalCount: orders.length,
       color: "bg-orange-500",
+    },
+    {
+      value: "purchase_order",
+      label: "Purchase Orders",
+      icon: <Package className="w-4 h-4" />,
+      count: filteredPurchaseOrders.length,
+      totalCount: purchaseOrders.length,
+      color: "bg-green-500",
     },
     {
       value: "invoice",
@@ -428,6 +422,61 @@ export default function Estimate() {
               </Card>
             </TabsContent>
 
+            <TabsContent value="order_form">
+              <Card className="border shadow-sm bg-white">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center justify-between text-base">
+                    <div className="flex items-center space-x-2">
+                      <ShoppingCart className="w-4 h-4" />
+                      <span>Order Forms</span>
+                    </div>
+                    {searchTerm && filteredOrders.length !== orders.length && (
+                      <span className="text-xs text-slate-500">
+                        {filteredOrders.length} of {orders.length}
+                      </span>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  {filteredOrders.length === 0 && searchTerm ? (
+                    <div className="text-center py-6 text-sm text-slate-500">
+                      No order forms found matching "{searchTerm}"
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-xs font-medium h-8">
+                            Order No.
+                          </TableHead>
+                          <TableHead className="text-xs font-medium h-8">
+                            Customer PO
+                          </TableHead>
+                          <TableHead className="text-xs font-medium h-8">
+                            Quotation Ref.
+                          </TableHead>
+                          <TableHead className="text-xs font-medium h-8 text-right">
+                            Date Ordered
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredOrders.map((order) => (
+                          <OrderPopup
+                            order={order}
+                            key={
+                              order.order_number || order.id || Math.random()
+                            } // Use unique identifier instead of index
+                            onUpdate={handleUpdate}
+                          />
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
             <TabsContent value="purchase_order">
               <Card className="border shadow-sm bg-white">
                 <CardHeader className="pb-3">
@@ -474,59 +523,6 @@ export default function Estimate() {
                           <PurchaseOrderPopup
                             purchaseOrder={po}
                             key={po.DocNumber || index}
-                            onUpdate={handleUpdate}
-                          />
-                        ))}
-                      </TableBody>
-                    </Table>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="order_form">
-              <Card className="border shadow-sm bg-white">
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center justify-between text-base">
-                    <div className="flex items-center space-x-2">
-                      <ShoppingCart className="w-4 h-4" />
-                      <span>Order Forms</span>
-                    </div>
-                    {searchTerm && filteredOrders.length !== orders.length && (
-                      <span className="text-xs text-slate-500">
-                        {filteredOrders.length} of {orders.length}
-                      </span>
-                    )}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  {filteredOrders.length === 0 && searchTerm ? (
-                    <div className="text-center py-6 text-sm text-slate-500">
-                      No order forms found matching "{searchTerm}"
-                    </div>
-                  ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="text-xs font-medium h-8">
-                            Order No.
-                          </TableHead>
-                          <TableHead className="text-xs font-medium h-8">
-                            Customer PO
-                          </TableHead>
-                          <TableHead className="text-xs font-medium h-8">
-                            Quotation Ref.
-                          </TableHead>
-                          <TableHead className="text-xs font-medium h-8 text-right">
-                            Date Ordered
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredOrders.map((order) => (
-                          <OrderPopup
-                            order={order}
-                            key={order.order_number || order.id || Math.random()} // Use unique identifier instead of index
                             onUpdate={handleUpdate}
                           />
                         ))}

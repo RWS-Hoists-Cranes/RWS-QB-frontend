@@ -94,7 +94,7 @@ export default function PickService({ value, setValue }) {
         >
           <CommandInput placeholder="Search service..." />
           <CommandEmpty>No service found.</CommandEmpty>
-          <CommandList>
+          <CommandList className="max-h-[200px] overflow-y-auto">
             <CommandGroup>
               {service.map((location) => (
                 <CommandItem

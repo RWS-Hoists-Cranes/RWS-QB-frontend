@@ -77,7 +77,7 @@ export default function PickCustomer({ value, setValue }) {
         >
           <CommandInput placeholder="Search customer..." />
           <CommandEmpty>No customer found.</CommandEmpty>
-          <CommandList>
+          <CommandList className="max-h-[200px] overflow-y-auto">
             <CommandGroup>
               {Object.keys(customers).map((customerName) => (
                 <CommandItem

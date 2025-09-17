@@ -77,7 +77,6 @@ export default function EstimatePopup({ estimate, onUpdate }) {
 
         if (response.ok) {
           const data = await response.json();
-          console.log("Synced estimate from QuickBooks to database");
         } else {
           console.error("Error syncing estimate to database");
         }
@@ -109,7 +108,6 @@ export default function EstimatePopup({ estimate, onUpdate }) {
           setFob(data.fob);
           setItemDelivery(data.itemDelivery);
 
-          console.log("Fetched estimate data:", data);
           if (data.itemQuantities) {
             setItemQuantities(data.itemQuantities);
           } else {
@@ -160,7 +158,7 @@ export default function EstimatePopup({ estimate, onUpdate }) {
           term,
           itemDelivery,
           fob,
-          Id: estimate.Id,
+          quotation_id: estimate.Id, // Include quotation_id for QB sync
           itemQuantityOrdered,
           itemQuantities,
         }),
@@ -341,7 +339,7 @@ export default function EstimatePopup({ estimate, onUpdate }) {
                 </RadioGroup>
               </div>
               <div className="flex space-x-4">
-                <span>FOB Point:</span>
+                <span>FOB point:</span>
                 <RadioGroup
                   defaultValue={fob}
                   onValueChange={(value) => {
@@ -364,7 +362,7 @@ export default function EstimatePopup({ estimate, onUpdate }) {
               </div>
             </div>
 
-            <Table>
+            <Table className="!overflow-visible !max-h-none">
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[150px]">RWS Part No.</TableHead>
@@ -378,7 +376,7 @@ export default function EstimatePopup({ estimate, onUpdate }) {
                   <TableHead className="text-right">Delivery</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
+              <TableBody className="!overflow-visible !max-h-none">
                 {estimate.Line.slice(0, estimate.Line.length - 1).map(
                   (line) => {
                     const itemName = line.SalesItemLineDetail.ItemRef.name;
@@ -423,12 +421,7 @@ export default function EstimatePopup({ estimate, onUpdate }) {
                   }
                 )}
               </TableBody>
-              <TableFooter>
-                {/* <TableRow>
-                                <TableCell colSpan={3}>Total</TableCell>
-                                <TableCell className="text-right">$2,500.00</TableCell>
-                            </TableRow> */}
-              </TableFooter>
+              <TableFooter></TableFooter>
             </Table>
             <DialogFooter>
               <DialogClose asChild>
