@@ -157,6 +157,12 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
           comments: comments,
           dateOrdered: invoice.order?.date_ordered,
           shippingDate: shippingDate || invoice.order?.date_ordered,
+          // Additional fields for back order HTML
+          order: invoice.order,
+          orderNumber: invoice.order?.order_number,
+          billingType: invoice.order?.billing_type,
+          orderComments: invoice.order?.comments,
+          dateRequired: invoice.DueDate,
         }),
       });
       const html = await response.text();
@@ -190,10 +196,10 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
       <DialogTrigger asChild>
         <TableRow className="cursor-pointer hover:bg-gray-100">
           <TableCell className="font-medium">{invoice.DocNumber}</TableCell>
-          <TableCell className="">{invoice.order.customer_PO}</TableCell>
-          <TableCell className="">{invoice.order.order_number}</TableCell>
+          <TableCell className="">{invoice.order?.customer_PO || ""}</TableCell>
+          <TableCell className="">{invoice.order?.order_number || ""}</TableCell>
           <TableCell className="text-right">
-            {invoice.order.date_ordered.split("T")[0]}
+            {invoice.order?.date_ordered.split("T")[0]}
           </TableCell>
           <TableCell className="text-right">
             <DropdownMenu>
