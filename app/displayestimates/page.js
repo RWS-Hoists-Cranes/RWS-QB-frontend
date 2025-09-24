@@ -387,7 +387,7 @@ export default function Estimate() {
                 <CardContent className="pt-0">
                   {filteredEstimates.length === 0 && searchTerm ? (
                     <div className="text-center py-6 text-sm text-slate-500">
-                      No quotes found matching "{searchTerm}"
+                      {`No quotes found matching "${searchTerm}"`}
                     </div>
                   ) : (
                     <Table>
@@ -440,7 +440,7 @@ export default function Estimate() {
                 <CardContent className="pt-0">
                   {filteredOrders.length === 0 && searchTerm ? (
                     <div className="text-center py-6 text-sm text-slate-500">
-                      No order forms found matching "{searchTerm}"
+                      {`No order forms found matching "${searchTerm}"`}
                     </div>
                   ) : (
                     <Table>
@@ -498,7 +498,7 @@ export default function Estimate() {
                 <CardContent className="pt-0">
                   {filteredPurchaseOrders.length === 0 && searchTerm ? (
                     <div className="text-center py-6 text-sm text-slate-500">
-                      No purchase orders found matching "{searchTerm}"
+                      {`No purchase orders found matching "${searchTerm}"`}
                     </div>
                   ) : (
                     <Table>
@@ -552,7 +552,7 @@ export default function Estimate() {
                 <CardContent className="pt-0">
                   {filteredInvoices.length === 0 && searchTerm ? (
                     <div className="text-center py-6 text-sm text-slate-500">
-                      No invoices found matching "{searchTerm}"
+                      {`No invoices found matching "${searchTerm}"`}
                     </div>
                   ) : (
                     <Table>

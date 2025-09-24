@@ -74,7 +74,7 @@ export default function CreateInvoices() {
     };
 
     fetchOrder();
-  }, [estimateNum]);
+  }, [estimateNum, toast]);
 
   const [invoiceNo, setInvoiceNo] = useState("");
   const [lineItems, setLineItems] = useState([]);
