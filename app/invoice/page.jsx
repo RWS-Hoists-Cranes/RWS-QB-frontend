@@ -1,6 +1,6 @@
 "use client";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 
-export default function CreateInvoices() {
+function CreateInvoicesContent() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
@@ -272,4 +272,12 @@ async function constructInvoice(customerId, invoiceNo, lineItems, estimateId) {
     console.error("Error constructing invoice:", error);
     throw error;
   }
+}
+
+export default function CreateInvoices() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CreateInvoicesContent />
+    </Suspense>
+  );
 }
