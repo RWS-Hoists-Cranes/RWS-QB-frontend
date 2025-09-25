@@ -64,16 +64,19 @@ export default function EstimatePopup({ estimate, onUpdate }) {
 
     const postEstimate = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/estimate", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            quotation_number: quotationNumber,
-            quotation_id: estimate.Id,
-          }),
-        });
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/estimate`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              quotation_number: quotationNumber,
+              quotation_id: estimate.Id,
+            }),
+          }
+        );
 
         if (response.ok) {
           const data = await response.json();
@@ -88,7 +91,7 @@ export default function EstimatePopup({ estimate, onUpdate }) {
     const populateEstimateInfo = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8080/api/estimate?quotation_number=${estimate.DocNumber}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/estimate?quotation_number=${estimate.DocNumber}`,
           {
             method: "GET",
             headers: {
@@ -97,7 +100,6 @@ export default function EstimatePopup({ estimate, onUpdate }) {
             cache: "no-store",
           }
         );
-
         if (response.ok) {
           const data = await response.json();
           setEnquiryRef(data.customer_ref);
@@ -144,25 +146,28 @@ export default function EstimatePopup({ estimate, onUpdate }) {
 
   const saveData = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/estimate", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          estimateID: estimate.DocNumber,
-          enquiryRef,
-          product,
-          serial,
-          model,
-          term,
-          itemDelivery,
-          fob,
-          quotation_id: estimate.Id, // Include quotation_id for QB sync
-          itemQuantityOrdered,
-          itemQuantities,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/estimate`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            estimateID: estimate.DocNumber,
+            enquiryRef,
+            product,
+            serial,
+            model,
+            term,
+            itemDelivery,
+            fob,
+            quotation_id: estimate.Id, // Include quotation_id for QB sync
+            itemQuantityOrdered,
+            itemQuantities,
+          }),
+        }
+      );
       console.log("Successfully saved the data");
     } catch (error) {
       console.error("Failed to save the data");
@@ -172,23 +177,26 @@ export default function EstimatePopup({ estimate, onUpdate }) {
   const fetchHtmlContent = async () => {
     try {
       await saveData();
-      const response = await fetch("http://localhost:8080/api/estimateHtml", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          estimateID: estimate.DocNumber,
-          enquiryRef,
-          product,
-          serial,
-          model,
-          term,
-          itemDelivery,
-          fob,
-          itemQuantities,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/estimateHtml`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            estimateID: estimate.DocNumber,
+            enquiryRef,
+            product,
+            serial,
+            model,
+            term,
+            itemDelivery,
+            fob,
+            itemQuantities,
+          }),
+        }
+      );
       const html = await response.text();
       openHtmlInNewTab(html);
     } catch (error) {
@@ -217,18 +225,21 @@ export default function EstimatePopup({ estimate, onUpdate }) {
 
   const acceptestimate = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/acceptestimate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          SyncToken: estimate.SyncToken,
-          Id: estimate.Id,
-          estimateID: estimate.DocNumber,
-          status: !switchState,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/acceptestimate`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            SyncToken: estimate.SyncToken,
+            Id: estimate.Id,
+            estimateID: estimate.DocNumber,
+            status: !switchState,
+          }),
+        }
+      );
       if (onUpdate) onUpdate();
       const data = await response.json();
       setSwitchState(!switchState);

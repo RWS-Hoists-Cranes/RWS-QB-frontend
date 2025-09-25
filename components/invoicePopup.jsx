@@ -48,7 +48,7 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
           const part_number = line.SalesItemLineDetail.ItemRef.name;
 
           const response = await fetch(
-            `http://localhost:8080/api/quotePartQuantity?quotation_number=${invoice.estimate.quotation_number}`,
+            `${process.env.NEXT_PUBLIC_API_URL}/api/quotePartQuantity?quotation_number=${invoice.estimate.quotation_number}`,
             {
               method: "POST",
               headers: {
@@ -78,20 +78,23 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
 
       await Promise.all(linePromises);
 
-      const response = await fetch("http://localhost:8080/api/invoice", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          invoice_number: invoice.DocNumber, // Use DocNumber instead of Id
-          gst: gst, // Keep as 'gst' to match backend expectation
-          quotation_number: invoice.estimate?.quotation_number,
-          customer_po: customerPO,
-          comments: comments,
-          shipping_date: shippingDate || null,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/invoice`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            invoice_number: invoice.DocNumber, // Use DocNumber instead of Id
+            gst: gst, // Keep as 'gst' to match backend expectation
+            quotation_number: invoice.estimate?.quotation_number,
+            customer_po: customerPO,
+            comments: comments,
+            shipping_date: shippingDate || null,
+          }),
+        }
+      );
 
       const data = await response.json();
 
@@ -109,20 +112,23 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
   const fetchHtmlContent = async () => {
     try {
       await saveData();
-      const response = await fetch("http://localhost:8080/api/invoiceHtml", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          invoice: invoice,
-          gst: gst,
-          customer_po: customerPO,
-          comments: comments,
-          dateOrdered: invoice.order?.date_ordered,
-          shippingDate: shippingDate || invoice.order?.date_ordered,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/invoiceHtml`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            invoice: invoice,
+            gst: gst,
+            customer_po: customerPO,
+            comments: comments,
+            dateOrdered: invoice.order?.date_ordered,
+            shippingDate: shippingDate || invoice.order?.date_ordered,
+          }),
+        }
+      );
       const html = await response.text();
       openHtmlInNewTab(html);
     } catch (error) {
@@ -145,26 +151,29 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
       console.log("gst:", gst);
 
       await saveData();
-      const response = await fetch("http://localhost:8080/api/backOrderHtml", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          invoice: invoice,
-          gst: gst,
-          customer_po: customerPO,
-          comments: comments,
-          dateOrdered: invoice.order?.date_ordered,
-          shippingDate: shippingDate || invoice.order?.date_ordered,
-          // Additional fields for back order HTML
-          order: invoice.order,
-          orderNumber: invoice.order?.order_number,
-          billingType: invoice.order?.billing_type,
-          orderComments: invoice.order?.comments,
-          dateRequired: invoice.DueDate,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/backOrderHtml`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            invoice: invoice,
+            gst: gst,
+            customer_po: customerPO,
+            comments: comments,
+            dateOrdered: invoice.order?.date_ordered,
+            shippingDate: shippingDate || invoice.order?.date_ordered,
+            // Additional fields for back order HTML
+            order: invoice.order,
+            orderNumber: invoice.order?.order_number,
+            billingType: invoice.order?.billing_type,
+            orderComments: invoice.order?.comments,
+            dateRequired: invoice.DueDate,
+          }),
+        }
+      );
       const html = await response.text();
       openHtmlInNewTab(html);
     } catch (error) {
@@ -197,7 +206,9 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
         <TableRow className="cursor-pointer hover:bg-gray-100">
           <TableCell className="font-medium">{invoice.DocNumber}</TableCell>
           <TableCell className="">{invoice.order?.customer_PO || ""}</TableCell>
-          <TableCell className="">{invoice.order?.order_number || ""}</TableCell>
+          <TableCell className="">
+            {invoice.order?.order_number || ""}
+          </TableCell>
           <TableCell className="text-right">
             {invoice.order?.date_ordered.split("T")[0]}
           </TableCell>

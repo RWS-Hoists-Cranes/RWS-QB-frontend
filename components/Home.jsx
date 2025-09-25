@@ -8,7 +8,7 @@ export default function HomeClient() {
   const router = useRouter();
 
   const handleClick = () => {
-    router.push("http://localhost:8080/api/auth");
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/auth`;
   };
 
   return (

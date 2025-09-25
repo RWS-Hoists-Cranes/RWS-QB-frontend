@@ -42,7 +42,9 @@ export default function Estimate() {
   useEffect(() => {
     async function fetchOrders() {
       try {
-        const response = await fetch("http://localhost:8080/api/orders");
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/orders`
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch orders");
         }
@@ -65,7 +67,9 @@ export default function Estimate() {
   useEffect(() => {
     async function fetchInvoices() {
       try {
-        const response = await fetch("http://localhost:8080/api/invoices");
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/invoices`
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch invoices");
         }
@@ -90,7 +94,7 @@ export default function Estimate() {
     async function fetchData() {
       try {
         const estimatesResponse = await fetch(
-          "http://localhost:8080/api/estimates"
+          `${process.env.NEXT_PUBLIC_API_URL}/api/estimates`
         );
         if (estimatesResponse.ok) {
           const estimatesText = await estimatesResponse.text();
@@ -119,7 +123,7 @@ export default function Estimate() {
     async function fetchPurchaseOrders() {
       try {
         const response = await fetch(
-          "http://localhost:8080/api/purchaseorders"
+          `${process.env.NEXT_PUBLIC_API_URL}/api/purchaseorders`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch purchase orders");

@@ -27,12 +27,15 @@ export default function PickCustomer({ value, setValue }) {
   useEffect(() => {
     const getCustomers = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/customers", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/customers`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         if (response.ok) {
           const data = await response.json();

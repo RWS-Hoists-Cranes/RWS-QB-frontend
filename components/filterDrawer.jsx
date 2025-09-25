@@ -71,19 +71,22 @@ export default function FilterDrawer() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8080/api/filteredForm", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          dateRange,
-          territory,
-          reportType: selectedForm,
-          customer,
-          service,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/filteredForm`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            dateRange,
+            territory,
+            reportType: selectedForm,
+            customer,
+            service,
+          }),
+        }
+      );
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -186,9 +189,7 @@ export default function FilterDrawer() {
             </DrawerClose>
           </DrawerHeader>
 
-          <div
-            className="flex-1 overflow-y-auto px-4"
-          >
+          <div className="flex-1 overflow-y-auto px-4">
             <Accordion
               type="multiple"
               collapsible

@@ -154,21 +154,24 @@ export default function OrderPopup({ order, onUpdate }) {
       const finalShippingMethod =
         shippingMethod === "other" ? customShippingText : shippingMethod;
 
-      const response = await fetch("http://localhost:8080/api/order", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          order_number: orderNumber,
-          quotation_number: quotationNumber,
-          shipping_method: finalShippingMethod,
-          customer_PO: customerPO,
-          comments: comments,
-          billing_type: billingType,
-          ship_to: shipTo,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/order`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            order_number: orderNumber,
+            quotation_number: quotationNumber,
+            shipping_method: finalShippingMethod,
+            customer_PO: customerPO,
+            comments: comments,
+            billing_type: billingType,
+            ship_to: shipTo,
+          }),
+        }
+      );
 
       if (onUpdate) onUpdate();
 
@@ -189,23 +192,26 @@ export default function OrderPopup({ order, onUpdate }) {
       shippingMethod === "other" ? customShippingText : shippingMethod;
 
     try {
-      const response = await fetch("http://localhost:8080/api/orderHTML", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          orderNumber,
-          customerPO,
-          shippingMethod: finalShippingMethod,
-          billingType,
-          comments,
-          quotationNumber,
-          dateOrdered,
-          order,
-          ship_to: shipTo,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orderHTML`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            orderNumber,
+            customerPO,
+            shippingMethod: finalShippingMethod,
+            billingType,
+            comments,
+            quotationNumber,
+            dateOrdered,
+            order,
+            ship_to: shipTo,
+          }),
+        }
+      );
       const html = await response.text();
       openHtmlInNewTab(html);
     } catch (error) {
@@ -238,7 +244,7 @@ export default function OrderPopup({ order, onUpdate }) {
 
     try {
       const response = await fetch(
-        "http://localhost:8080/api/orderPackingSlipHTML",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orderPackingSlipHTML`,
         {
           method: "POST",
           headers: {

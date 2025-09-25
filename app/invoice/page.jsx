@@ -38,7 +38,7 @@ function CreateInvoicesContent() {
 
       try {
         const response = await fetch(
-          `http://localhost:8080/api/order?estimate_id=${estimateNum}`
+          `${process.env.NEXT_PUBLIC_API_URL}/api/order?estimate_id=${estimateNum}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch order");
@@ -136,13 +136,16 @@ function CreateInvoicesContent() {
   const fetchHtmlContent = async (invoiceData) => {
     try {
       // await saveData();
-      const response = await fetch("http://localhost:8080/api/invoiceHtml", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ invoice: invoiceData, gst: "Doesn't matter" }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/invoiceHtml`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ invoice: invoiceData, gst: "Doesn't matter" }),
+        }
+      );
       const html = await response.text();
       openHtmlInNewTab(html);
     } catch (error) {
@@ -247,18 +250,21 @@ function CreateInvoicesContent() {
 
 async function constructInvoice(customerId, invoiceNo, lineItems, estimateId) {
   try {
-    const response = await fetch("http://localhost:8080/api/create-invoice", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        customerId,
-        invoiceNo,
-        lineItems,
-        estimateId,
-      }),
-    });
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/create-invoice`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customerId,
+          invoiceNo,
+          lineItems,
+          estimateId,
+        }),
+      }
+    );
 
     if (!response.ok) {
       throw new Error("Failed to create invoice");

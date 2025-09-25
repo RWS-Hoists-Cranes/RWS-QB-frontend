@@ -119,25 +119,28 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
       const finalShippingMethod =
         shippingMethod === "other" ? customShippingText : shippingMethod;
 
-      const res = await fetch("http://localhost:8080/api/purchaseorder", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          po_number: poNumber,
-          order_number: orderNumber,
-          vendor_name: vendorName,
-          shipping_method: finalShippingMethod,
-          comments: comments,
-          billing_type: billingType,
-          isFreight: isFreight,
-          ship_from: shipFrom,
-          ship_to: shipTo,
-          dimensions: dimensions,
-          pickupDate: pickupDate,
-        }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/purchaseorder`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            po_number: poNumber,
+            order_number: orderNumber,
+            vendor_name: vendorName,
+            shipping_method: finalShippingMethod,
+            comments: comments,
+            billing_type: billingType,
+            isFreight: isFreight,
+            ship_from: shipFrom,
+            ship_to: shipTo,
+            dimensions: dimensions,
+            pickupDate: pickupDate,
+          }),
+        }
+      );
 
       if (!res.ok) {
         const errorData = await res.json();
@@ -162,27 +165,30 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
       shippingMethod === "other" ? customShippingText : shippingMethod;
 
     try {
-      const res = await fetch("http://localhost:8080/api/purchaseOrderHTML", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          poNumber,
-          orderNumber,
-          vendorName,
-          shippingMethod: finalShippingMethod,
-          comments,
-          dateOrdered,
-          purchaseOrder,
-          billingType,
-          isFreight,
-          ship_from: shipFrom,
-          ship_to: shipTo,
-          dimensions: dimensions,
-          pickupDate: pickupDate,
-        }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/purchaseOrderHTML`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            poNumber,
+            orderNumber,
+            vendorName,
+            shippingMethod: finalShippingMethod,
+            comments,
+            dateOrdered,
+            purchaseOrder,
+            billingType,
+            isFreight,
+            ship_from: shipFrom,
+            ship_to: shipTo,
+            dimensions: dimensions,
+            pickupDate: pickupDate,
+          }),
+        }
+      );
 
       const html = await res.text();
       openHtmlInNewTab(html);
