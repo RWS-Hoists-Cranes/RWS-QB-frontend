@@ -312,9 +312,7 @@ export default function OrderPopup({ order, onUpdate }) {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    router.push(
-                      `/invoice?estimate_no=${quotationNumber}&estimate_id=${order.estimate.Id}`
-                    );
+                    window.location.href = `/invoice?estimate_no=${quotationNumber}&estimate_id=${order.estimate.Id}`;
                   }}
                 >
                   Create an invoice
