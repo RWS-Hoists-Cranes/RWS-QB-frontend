@@ -44,17 +44,25 @@ export default function EstimatePopup({ estimate, onUpdate }) {
 
   const initializeItemQuantity = (estimate) => {
     const initialItemQuantities = {};
-    estimate.Line.slice(0, estimate.Line.length - 1).forEach((line) => {
-      initialItemQuantities[line.SalesItemLineDetail.ItemRef.name] =
-        line.SalesItemLineDetail.Qty;
+    // Show all lines, let backend filter out invalid ones
+    estimate.Line.forEach((line) => {
+      // Only process lines that have SalesItemLineDetail (actual items)
+      if (line.SalesItemLineDetail?.ItemRef?.name) {
+        initialItemQuantities[line.SalesItemLineDetail.ItemRef.name] =
+          line.SalesItemLineDetail.Qty;
+      }
     });
     return initialItemQuantities;
   };
 
   const initializeItemDelivery = (estimate) => {
     const initialItemDelivery = {};
-    estimate.Line.slice(0, estimate.Line.length - 1).forEach((line) => {
-      initialItemDelivery[line.SalesItemLineDetail.ItemRef.name] = "";
+    // Show all lines, let backend filter out invalid ones
+    estimate.Line.forEach((line) => {
+      // Only process lines that have SalesItemLineDetail (actual items)
+      if (line.SalesItemLineDetail?.ItemRef?.name) {
+        initialItemDelivery[line.SalesItemLineDetail.ItemRef.name] = "";
+      }
     });
     return initialItemDelivery;
   };
@@ -214,7 +222,7 @@ export default function EstimatePopup({ estimate, onUpdate }) {
         setTimeout(() => {
           newWindow.print();
           newWindow.close();
-        }, 300);
+        }, 200);
       } else {
         setTimeout(checkReady, 100);
       }
@@ -388,49 +396,48 @@ export default function EstimatePopup({ estimate, onUpdate }) {
                 </TableRow>
               </TableHeader>
               <TableBody className="!overflow-visible !max-h-none">
-                {estimate.Line.slice(0, estimate.Line.length - 1).map(
-                  (line) => {
-                    const itemName = line.SalesItemLineDetail.ItemRef.name;
-                    const qbQuantity = line.SalesItemLineDetail.Qty;
-                    itemQuantityOrdered[itemName] =
-                      itemQuantities[itemName] || 0;
+                {estimate.Line.filter(
+                  (line) =>
+                    // Only show lines that have SalesItemLineDetail (actual items)
+                    line.SalesItemLineDetail?.ItemRef?.name
+                ).map((line) => {
+                  const itemName = line.SalesItemLineDetail.ItemRef.name;
+                  const qbQuantity = line.SalesItemLineDetail.Qty;
+                  itemQuantityOrdered[itemName] = itemQuantities[itemName] || 0;
 
-                    return (
-                      <TableRow key={line.Id}>
-                        <TableCell className="font-medium">
-                          {itemName}
-                        </TableCell>
-                        <TableCell className="w-full">
-                          {line.Description}
-                        </TableCell>
-                        <TableCell className="text-center font-medium text-gray-600">
-                          {qbQuantity}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Input
-                            type="number"
-                            min="0"
-                            value={itemQuantities[itemName] || 0}
-                            onChange={(e) =>
-                              handleQuantityChange(itemName, e.target.value)
-                            }
-                            className="w-16 text-center"
-                          />
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <textarea
-                            type="text"
-                            value={itemDelivery[itemName] || ""}
-                            onChange={(e) =>
-                              handleDeliveryChange(itemName, e.target.value)
-                            }
-                            className="min-h-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </TableCell>
-                      </TableRow>
-                    );
-                  }
-                )}
+                  return (
+                    <TableRow key={line.Id}>
+                      <TableCell className="font-medium">{itemName}</TableCell>
+                      <TableCell className="w-full">
+                        {line.Description}
+                      </TableCell>
+                      <TableCell className="text-center font-medium text-gray-600">
+                        {qbQuantity}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Input
+                          type="number"
+                          min="0"
+                          value={itemQuantities[itemName] || 0}
+                          onChange={(e) =>
+                            handleQuantityChange(itemName, e.target.value)
+                          }
+                          className="w-16 text-center"
+                        />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <textarea
+                          type="text"
+                          value={itemDelivery[itemName] || ""}
+                          onChange={(e) =>
+                            handleDeliveryChange(itemName, e.target.value)
+                          }
+                          className="min-h-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
               <TableFooter></TableFooter>
             </Table>
