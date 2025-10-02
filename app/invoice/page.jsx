@@ -262,7 +262,7 @@ async function constructInvoice(customerId, invoiceNo, lineItems, estimateId) {
           invoiceNo,
           lineItems,
           estimateId,
-        }),
+        }), 
       }
     );
 
@@ -276,7 +276,6 @@ async function constructInvoice(customerId, invoiceNo, lineItems, estimateId) {
     return data;
   } catch (error) {
     console.error("Error constructing invoice:", error);
-    throw error;
   }
 }
 
