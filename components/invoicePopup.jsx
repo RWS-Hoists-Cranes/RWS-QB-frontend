@@ -138,18 +138,6 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
 
   const fetchBackOrderHtml = async () => {
     try {
-      console.log("=== Frontend fetchBackOrderHtml called ===");
-      console.log("invoice.DocNumber:", invoice.DocNumber);
-      console.log(
-        "invoice.order?.quotation_number:",
-        invoice.order?.quotation_number
-      );
-      console.log(
-        "invoice.estimate?.quotation_number:",
-        invoice.estimate?.quotation_number
-      );
-      console.log("gst:", gst);
-
       await saveData();
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/backOrderHtml`,
