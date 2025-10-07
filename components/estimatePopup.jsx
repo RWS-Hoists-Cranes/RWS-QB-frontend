@@ -48,6 +48,7 @@ export default function EstimatePopup({ estimate, onUpdate }) {
     estimate.Line.forEach((line) => {
       // Only process lines that have SalesItemLineDetail (actual items)
       if (line.SalesItemLineDetail?.ItemRef?.name) {
+        // Initialize with QB quantity instead of QB quantity
         initialItemQuantities[line.SalesItemLineDetail.ItemRef.name] =
           line.SalesItemLineDetail.Qty;
       }
@@ -416,7 +417,7 @@ export default function EstimatePopup({ estimate, onUpdate }) {
                         <Input
                           type="number"
                           min="0"
-                          value={itemQuantities[itemName] || 0}
+                          value={itemQuantities[itemName] || qbQuantity}
                           onChange={(e) =>
                             handleQuantityChange(itemName, e.target.value)
                           }
