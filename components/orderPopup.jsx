@@ -671,8 +671,8 @@ export default function OrderPopup({ order, onUpdate }) {
 
       {/* Modify Original Form Dialog */}
       <Dialog open={isModifyDialogOpen} onOpenChange={setIsModifyDialogOpen}>
-        <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden">
-          <DialogHeader className="pb-4">
+        <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader className="pb-4 shrink-0">
             <DialogTitle className="text-xl font-semibold">
               Modify Order Quantities
             </DialogTitle>
@@ -682,63 +682,68 @@ export default function OrderPopup({ order, onUpdate }) {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto px-1">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-b">
-                  <TableHead className="text-left font-semibold py-3 px-4 w-[40%]">
-                    Item Name
-                  </TableHead>
-                  <TableHead className="text-center font-semibold py-3 px-4 w-[20%]">
-                    Original Qty
-                  </TableHead>
-                  <TableHead className="text-center font-semibold py-3 px-4 w-[40%]">
-                    New Order Qty
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {order.estimate && order.estimate.Line
-                  ? order.estimate.Line.filter(
-                      (line) =>
-                        // Only show lines that have SalesItemLineDetail (actual items)
-                        line.SalesItemLineDetail?.ItemRef?.name
-                    ).map((line) => {
-                      const itemName = line.SalesItemLineDetail.ItemRef.name;
-                      const originalQuantity = line.SalesItemLineDetail.Qty;
+          <div className="flex-1 overflow-y-auto px-1 min-h-0">
+            <div className="max-h-[50vh] overflow-y-auto border rounded-md">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-b">
+                    <TableHead className="text-left font-semibold py-3 px-4 w-[40%]">
+                      Item Name
+                    </TableHead>
+                    <TableHead className="text-center font-semibold py-3 px-4 w-[20%]">
+                      Original Qty
+                    </TableHead>
+                    <TableHead className="text-center font-semibold py-3 px-4 w-[40%]">
+                      New Order Qty
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {order.estimate && order.estimate.Line
+                    ? order.estimate.Line.filter(
+                        (line) =>
+                          // Only show lines that have SalesItemLineDetail (actual items)
+                          line.SalesItemLineDetail?.ItemRef?.name
+                      ).map((line) => {
+                        const itemName = line.SalesItemLineDetail.ItemRef.name;
+                        const originalQuantity = line.SalesItemLineDetail.Qty;
 
-                      return (
-                        <TableRow key={line.Id} className="hover:bg-gray-50">
-                          <TableCell className="py-4 px-4 font-medium text-sm">
-                            {itemName}
-                          </TableCell>
-                          <TableCell className="py-4 px-4 text-center">
-                            <span className="inline-flex items-center justify-center w-12 h-8 bg-gray-100 rounded text-sm font-medium text-gray-700">
-                              {originalQuantity}
-                            </span>
-                          </TableCell>
-                          <TableCell className="py-4 px-4">
-                            <div className="flex justify-center">
-                              <Input
-                                type="number"
-                                min="0"
-                                value={itemQuantities[itemName] || 0}
-                                onChange={(e) =>
-                                  handleQuantityChange(itemName, e.target.value)
-                                }
-                                className="w-20 text-center border-gray-300 "
-                              />
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  : null}
-              </TableBody>
-            </Table>
+                        return (
+                          <TableRow key={line.Id} className="hover:bg-gray-50">
+                            <TableCell className="py-4 px-4 font-medium text-sm">
+                              {itemName}
+                            </TableCell>
+                            <TableCell className="py-4 px-4 text-center">
+                              <span className="inline-flex items-center justify-center w-12 h-8 bg-gray-100 rounded text-sm font-medium text-gray-700">
+                                {originalQuantity}
+                              </span>
+                            </TableCell>
+                            <TableCell className="py-4 px-4">
+                              <div className="flex justify-center">
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  value={itemQuantities[itemName] || 0}
+                                  onChange={(e) =>
+                                    handleQuantityChange(
+                                      itemName,
+                                      e.target.value
+                                    )
+                                  }
+                                  className="w-20 text-center border-gray-300 "
+                                />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    : null}
+                </TableBody>
+              </Table>
+            </div>
           </div>
 
-          <DialogFooter className="pt-4 border-t bg-gray-50 mx-[-24px] px-6 pb-6">
+          <DialogFooter className="pt-4 border-t bg-gray-50 mx-[-24px] px-6 pb-6 shrink-0">
             <div className="flex justify-between items-center w-full">
               <p className="text-xs text-gray-500">
                 Quantities will be saved permanently and used for invoicing
