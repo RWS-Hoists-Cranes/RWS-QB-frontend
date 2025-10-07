@@ -394,33 +394,35 @@ export default function Estimate() {
                       {`No quotes found matching "${searchTerm}"`}
                     </div>
                   ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="text-xs font-medium h-8">
-                            Quote No.
-                          </TableHead>
-                          <TableHead className="text-xs font-medium h-8">
-                            Customer
-                          </TableHead>
-                          <TableHead className="text-xs font-medium h-8">
-                            Date Quoted
-                          </TableHead>
-                          <TableHead className="text-xs font-medium h-8 text-right">
-                            Actions
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredEstimates.map((estimate) => (
-                          <EstimatePopup
-                            estimate={estimate}
-                            key={estimate.Id}
-                            onUpdate={handleUpdate}
-                          />
-                        ))}
-                      </TableBody>
-                    </Table>
+                    <div className="max-h-[90%] overflow-y-auto">
+                      <Table>
+                        <TableHeader className="sticky top-0 bg-white z-10">
+                          <TableRow>
+                            <TableHead className="text-xs font-medium h-8">
+                              Quote No.
+                            </TableHead>
+                            <TableHead className="text-xs font-medium h-8">
+                              Customer
+                            </TableHead>
+                            <TableHead className="text-xs font-medium h-8">
+                              Date Quoted
+                            </TableHead>
+                            <TableHead className="text-xs font-medium h-8 text-right">
+                              Actions
+                            </TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredEstimates.map((estimate) => (
+                            <EstimatePopup
+                              estimate={estimate}
+                              key={estimate.Id}
+                              onUpdate={handleUpdate}
+                            />
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -447,35 +449,37 @@ export default function Estimate() {
                       {`No order forms found matching "${searchTerm}"`}
                     </div>
                   ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="text-xs font-medium h-8">
-                            Order No.
-                          </TableHead>
-                          <TableHead className="text-xs font-medium h-8">
-                            Customer PO
-                          </TableHead>
-                          <TableHead className="text-xs font-medium h-8">
-                            Quotation Ref.
-                          </TableHead>
-                          <TableHead className="text-xs font-medium h-8 text-right">
-                            Date Ordered
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredOrders.map((order) => (
-                          <OrderPopup
-                            order={order}
-                            key={
-                              order.order_number || order.id || Math.random()
-                            } // Use unique identifier instead of index
-                            onUpdate={handleUpdate}
-                          />
-                        ))}
-                      </TableBody>
-                    </Table>
+                    <div className="max-h-[90%] overflow-y-auto">
+                      <Table>
+                        <TableHeader className="sticky top-0 bg-white z-10">
+                          <TableRow>
+                            <TableHead className="text-xs font-medium h-8">
+                              Order No.
+                            </TableHead>
+                            <TableHead className="text-xs font-medium h-8">
+                              Customer PO
+                            </TableHead>
+                            <TableHead className="text-xs font-medium h-8">
+                              Quotation Ref.
+                            </TableHead>
+                            <TableHead className="text-xs font-medium h-8 text-right">
+                              Date Ordered
+                            </TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredOrders.map((order) => (
+                            <OrderPopup
+                              order={order}
+                              key={
+                                order.order_number || order.id || Math.random()
+                              } // Use unique identifier instead of index
+                              onUpdate={handleUpdate}
+                            />
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -505,33 +509,35 @@ export default function Estimate() {
                       {`No purchase orders found matching "${searchTerm}"`}
                     </div>
                   ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="text-xs font-medium h-8">
-                            PO No.
-                          </TableHead>
-                          <TableHead className="text-xs font-medium h-8">
-                            Vendor
-                          </TableHead>
-                          <TableHead className="text-xs font-medium h-8">
-                            R.W.S. JOB NO.
-                          </TableHead>
-                          <TableHead className="text-xs font-medium h-8 text-right">
-                            Date Ordered
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredPurchaseOrders.map((po, index) => (
-                          <PurchaseOrderPopup
-                            purchaseOrder={po}
-                            key={po.DocNumber || index}
-                            onUpdate={handleUpdate}
-                          />
-                        ))}
-                      </TableBody>
-                    </Table>
+                    <div className="max-h-[90%] overflow-y-auto">
+                      <Table>
+                        <TableHeader className="sticky top-0 bg-white z-10">
+                          <TableRow>
+                            <TableHead className="text-xs font-medium h-8">
+                              PO No.
+                            </TableHead>
+                            <TableHead className="text-xs font-medium h-8">
+                              Vendor
+                            </TableHead>
+                            <TableHead className="text-xs font-medium h-8">
+                              R.W.S. JOB NO.
+                            </TableHead>
+                            <TableHead className="text-xs font-medium h-8 text-right">
+                              Date Ordered
+                            </TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredPurchaseOrders.map((po, index) => (
+                            <PurchaseOrderPopup
+                              purchaseOrder={po}
+                              key={po.DocNumber || index}
+                              onUpdate={handleUpdate}
+                            />
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -559,34 +565,36 @@ export default function Estimate() {
                       {`No invoices found matching "${searchTerm}"`}
                     </div>
                   ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="text-xs font-medium h-8">
-                            Invoice No.
-                          </TableHead>
-                          <TableHead className="text-xs font-medium h-8">
-                            Customer PO
-                          </TableHead>
-                          <TableHead className="text-xs font-medium h-8">
-                            R.W.S. Job No.
-                          </TableHead>
-                          <TableHead className="text-xs font-medium h-8 text-right">
-                            Invoice Date
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredInvoices.map((invoice, index) => (
-                          <InvoicePopup
-                            invoice={invoice}
-                            key={index}
-                            index={index}
-                            onUpdate={handleUpdate}
-                          />
-                        ))}
-                      </TableBody>
-                    </Table>
+                    <div className="max-h-[90%] overflow-y-auto">
+                      <Table>
+                        <TableHeader className="sticky top-0 bg-white z-10">
+                          <TableRow>
+                            <TableHead className="text-xs font-medium h-8">
+                              Invoice No.
+                            </TableHead>
+                            <TableHead className="text-xs font-medium h-8">
+                              Customer PO
+                            </TableHead>
+                            <TableHead className="text-xs font-medium h-8">
+                              R.W.S. Job No.
+                            </TableHead>
+                            <TableHead className="text-xs font-medium h-8 text-right">
+                              Invoice Date
+                            </TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredInvoices.map((invoice, index) => (
+                            <InvoicePopup
+                              invoice={invoice}
+                              key={index}
+                              index={index}
+                              onUpdate={handleUpdate}
+                            />
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
                   )}
                 </CardContent>
               </Card>
