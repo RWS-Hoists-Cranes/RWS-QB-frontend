@@ -610,7 +610,7 @@ export default function OrderPopup({ order, onUpdate }) {
                 Billing Type
               </Label>
               <RadioGroup
-                defaultValue={billingType || "COLLECT"}
+                value={billingType || "COLLECT"}
                 className="col-span-3 flex justify-between"
                 onValueChange={(value) => {
                   setBillingType(value);
