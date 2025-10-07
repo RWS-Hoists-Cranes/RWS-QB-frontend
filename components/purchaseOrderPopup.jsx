@@ -224,7 +224,7 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
           <TableCell className="">{vendorName}</TableCell>
           <TableCell className="">{orderNumber}</TableCell>
           <TableCell className="text-right">
-            {dateOrdered?.split("T")[0] || "N/A"}
+            {purchaseOrder.TxnDate?.split("T")[0] || "N/A"}
           </TableCell>
           <TableCell className="text-right">
             <DropdownMenu>

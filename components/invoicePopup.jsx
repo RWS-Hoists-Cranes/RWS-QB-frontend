@@ -198,7 +198,7 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
             {invoice.order?.order_number || ""}
           </TableCell>
           <TableCell className="text-right">
-            {invoice.order?.date_ordered.split("T")[0]}
+            {invoice.TxnDate || invoice.order?.date_ordered.split("T")[0]}
           </TableCell>
           <TableCell className="text-right">
             <DropdownMenu>

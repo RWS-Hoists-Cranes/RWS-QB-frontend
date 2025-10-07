@@ -270,9 +270,7 @@ export default function EstimatePopup({ estimate, onUpdate }) {
                 {estimate.DocNumber}
               </TableCell>
               <TableCell className="">{estimate.CustomerRef.name}</TableCell>
-              <TableCell className="">
-                {estimate.MetaData.CreateTime.split("T")[0]}
-              </TableCell>
+              <TableCell className="">{estimate.TxnDate}</TableCell>
               <TableCell className="text-right">
                 <Switch
                   checked={switchState}

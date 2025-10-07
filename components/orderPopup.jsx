@@ -433,7 +433,7 @@ export default function OrderPopup({ order, onUpdate }) {
             <TableCell className="">{customerPO}</TableCell>
             <TableCell className="">{quotationNumber}</TableCell>
             <TableCell className="text-right">
-              {dateOrdered.split("T")[0]}
+              {order.estimate?.TxnDate || dateOrdered.split("T")[0]}
             </TableCell>
             <TableCell className="text-right">
               <DropdownMenu>
