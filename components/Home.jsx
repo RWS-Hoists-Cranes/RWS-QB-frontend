@@ -28,7 +28,7 @@ export default function HomeClient() {
             </div>
           </div>
 
-          {/* CTA Section */}
+          {/* CTA Sections */}
           <div className="space-y-6 pt-12">
             <Button
               onClick={handleClick}

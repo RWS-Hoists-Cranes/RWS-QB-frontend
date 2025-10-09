@@ -429,7 +429,7 @@ export default function OrderPopup({ order, onUpdate }) {
     <>
       <Dialog key={1}>
         <DialogTrigger asChild>
-          <TableRow>
+          <TableRow className="cursor-pointer hover:bg-gray-100">
             <TableCell className="font-medium">{orderNumber}</TableCell>
             <TableCell className="">
               {order.estimate?.CustomerRef?.name || ""}
@@ -441,7 +441,12 @@ export default function OrderPopup({ order, onUpdate }) {
             </TableCell>
             <TableCell className="text-right">
               <DropdownMenu>
-                <DropdownMenuTrigger>
+                <DropdownMenuTrigger
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                  }}
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
@@ -458,10 +463,11 @@ export default function OrderPopup({ order, onUpdate }) {
                     <circle cx="5" cy="12" r="1"></circle>
                   </svg>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
                   <DropdownMenuItem
                     onClick={(e) => {
                       e.stopPropagation();
+                      e.preventDefault();
                       printPackingSlip();
                     }}
                   >
@@ -666,6 +672,7 @@ export default function OrderPopup({ order, onUpdate }) {
               variant="secondary"
               onClick={(e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 setIsModifyDialogOpen(true);
               }}
             >
