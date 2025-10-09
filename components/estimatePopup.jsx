@@ -383,8 +383,7 @@ export default function EstimatePopup({ estimate, onUpdate }) {
             <Table className="!overflow-visible !max-h-none">
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[150px]">RWS Part No.</TableHead>
-                  <TableHead className="w-full">Description</TableHead>
+                  <TableHead className="w-[150px]">Item</TableHead>
                   <TableHead className="text-center w-[100px]">
                     QB Qty
                   </TableHead>
@@ -407,9 +406,6 @@ export default function EstimatePopup({ estimate, onUpdate }) {
                   return (
                     <TableRow key={line.Id}>
                       <TableCell className="font-medium">{itemName}</TableCell>
-                      <TableCell className="w-full">
-                        {line.Description}
-                      </TableCell>
                       <TableCell className="text-center font-medium text-gray-600">
                         {qbQuantity}
                       </TableCell>

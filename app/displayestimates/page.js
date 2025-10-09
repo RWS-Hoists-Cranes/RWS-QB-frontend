@@ -54,7 +54,15 @@ export default function Estimate() {
           : Array.isArray(data?.data)
           ? data.data
           : [];
-        setOrders(ordersData);
+
+        // Sort orders by order number in descending order
+        const sortedOrders = ordersData.sort((a, b) => {
+          const orderA = parseInt(a.order_number) || 0;
+          const orderB = parseInt(b.order_number) || 0;
+          return orderB - orderA; // Descending order (newest first)
+        });
+
+        setOrders(sortedOrders);
       } catch (error) {
         console.error("Error fetching orders:", error);
         setOrders([]);
@@ -455,6 +463,9 @@ export default function Estimate() {
                           <TableRow>
                             <TableHead className="text-xs font-medium h-8">
                               Order No.
+                            </TableHead>
+                            <TableHead className="text-xs font-medium h-8">
+                              Customer
                             </TableHead>
                             <TableHead className="text-xs font-medium h-8">
                               Customer PO

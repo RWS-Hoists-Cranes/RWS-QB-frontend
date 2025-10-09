@@ -143,6 +143,7 @@ export default function OrderPopup({ order, onUpdate }) {
 
   // Load item quantities on component mount
   useEffect(() => {
+    console.log(order.estimate);
     const loadQuantities = async () => {
       if (order.estimate && quotationNumber) {
         try {
@@ -430,6 +431,9 @@ export default function OrderPopup({ order, onUpdate }) {
         <DialogTrigger asChild>
           <TableRow>
             <TableCell className="font-medium">{orderNumber}</TableCell>
+            <TableCell className="">
+              {order.estimate?.CustomerRef?.name || ""}
+            </TableCell>
             <TableCell className="">{customerPO}</TableCell>
             <TableCell className="">{quotationNumber}</TableCell>
             <TableCell className="text-right">
@@ -636,7 +640,9 @@ export default function OrderPopup({ order, onUpdate }) {
                 Comments
               </Label>
               <Textarea
-                placeholder="Type your message here."
+                defaultValue={`Ordered by ${
+                  order.estimate?.customer_ref || "test"
+                }`}
                 className="col-span-3 resize-y overflow-auto"
                 value={comments}
                 onChange={(e) => setComments(e.target.value)}
