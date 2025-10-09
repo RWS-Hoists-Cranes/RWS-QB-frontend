@@ -143,7 +143,6 @@ export default function OrderPopup({ order, onUpdate }) {
 
   // Load item quantities on component mount
   useEffect(() => {
-    console.log(order.estimate);
     const loadQuantities = async () => {
       if (order.estimate && quotationNumber) {
         try {
@@ -353,7 +352,6 @@ export default function OrderPopup({ order, onUpdate }) {
       );
 
       if (response.ok) {
-        console.log("Quantities saved successfully");
         setIsModifyDialogOpen(false);
 
         // Refresh parent component if onUpdate callback exists

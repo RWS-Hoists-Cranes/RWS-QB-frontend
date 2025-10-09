@@ -183,18 +183,27 @@ export default function Estimate() {
     return orders.filter((order) => {
       const searchLower = searchTerm.toLowerCase();
 
-      // Check these specific fields
+      // Check these specific fields that are displayed in the table
       const orderNumber = order.order_number?.toString().toLowerCase();
+      const customerName = order.estimate?.CustomerRef?.name
+        ?.toString()
+        .toLowerCase();
       const customerPO = order.customer_PO?.toString().toLowerCase();
       const quotationNumber = order.quotation_number?.toString().toLowerCase();
-      const dateOrdered = order.date_ordered?.toString().toLowerCase();
 
-      return (
-        orderNumber?.includes(searchLower) ||
-        customerPO?.includes(searchLower) ||
-        quotationNumber?.includes(searchLower) ||
-        dateOrdered?.includes(searchLower)
-      );
+      // Use only the displayed date format, not raw timestamps
+      const displayedDate =
+        order.estimate?.TxnDate || order.date_ordered?.split("T")[0];
+      const dateOrdered = displayedDate?.toString().toLowerCase();
+
+      const matches =
+        (orderNumber && orderNumber.includes(searchLower)) ||
+        (customerName && customerName.includes(searchLower)) ||
+        (customerPO && customerPO.includes(searchLower)) ||
+        (quotationNumber && quotationNumber.includes(searchLower)) ||
+        (dateOrdered && dateOrdered.includes(searchLower));
+
+      return matches;
     });
   };
 
@@ -482,9 +491,9 @@ export default function Estimate() {
                           {filteredOrders.map((order) => (
                             <OrderPopup
                               order={order}
-                              key={
-                                order.order_number || order.id || Math.random()
-                              } // Use unique identifier instead of index
+                              key={`${order.order_number || "no-order"}-${
+                                order.quotation_number || "no-quote"
+                              }-${order.id || Math.random()}`}
                               onUpdate={handleUpdate}
                             />
                           ))}
