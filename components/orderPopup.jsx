@@ -127,6 +127,10 @@ export default function OrderPopup({ order, onUpdate }) {
   const [isModifyDialogOpen, setIsModifyDialogOpen] = useState(false);
   const [itemQuantities, setItemQuantities] = useState({});
 
+  // Loading states
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
   // Initialize item quantities from order estimate
   const initializeItemQuantity = (estimate) => {
     const initialItemQuantities = {};
@@ -215,6 +219,9 @@ export default function OrderPopup({ order, onUpdate }) {
   ];
 
   async function updateDatabase() {
+    if (isSaving) return; // Prevent multiple simultaneous saves
+
+    setIsSaving(true);
     try {
       const finalShippingMethod =
         shippingMethod === "other" ? customShippingText : shippingMethod;
@@ -238,15 +245,20 @@ export default function OrderPopup({ order, onUpdate }) {
         }
       );
 
-      if (onUpdate) onUpdate();
-
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
 
       const data = await response.json();
+
+      // Only call onUpdate and close dialog after successful save
+      if (onUpdate) onUpdate();
+      setIsDialogOpen(false);
     } catch (error) {
       console.error("Error updating order:", error);
+      // Don't close dialog on error so user can retry
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -425,9 +437,12 @@ export default function OrderPopup({ order, onUpdate }) {
 
   return (
     <>
-      <Dialog key={1}>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
-          <TableRow className="cursor-pointer hover:bg-gray-100">
+          <TableRow
+            className="cursor-pointer hover:bg-gray-100"
+            onClick={() => setIsDialogOpen(true)}
+          >
             <TableCell className="font-medium">{orderNumber}</TableCell>
             <TableCell className="">
               {order.estimate?.CustomerRef?.name || ""}
@@ -644,9 +659,7 @@ export default function OrderPopup({ order, onUpdate }) {
                 Comments
               </Label>
               <Textarea
-                defaultValue={`Ordered by ${
-                  order.estimate?.customer_ref || "test"
-                }`}
+                placeholder="Enter comments..."
                 className="col-span-3 resize-y overflow-auto"
                 value={comments}
                 onChange={(e) => setComments(e.target.value)}
@@ -656,16 +669,26 @@ export default function OrderPopup({ order, onUpdate }) {
 
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline" onClick={updateDatabase}>
-                Save and Close
+              <Button
+                variant="outline"
+                onClick={updateDatabase}
+                disabled={isSaving}
+              >
+                {isSaving ? "Saving..." : "Save and Close"}
               </Button>
             </DialogClose>
             <DialogClose asChild>
-              <Button type="submit" onClick={displayOrderHTML}>
-                Save and Print Order
+              <Button
+                type="submit"
+                onClick={displayOrderHTML}
+                disabled={isSaving}
+              >
+                {isSaving ? "Saving..." : "Save and Print Order"}
               </Button>
             </DialogClose>
-            <Button onClick={printPackingSlip}>Print Packing Slip</Button>
+            <Button onClick={printPackingSlip} disabled={isSaving}>
+              Print Packing Slip
+            </Button>
             <Button
               variant="secondary"
               onClick={(e) => {
@@ -673,6 +696,7 @@ export default function OrderPopup({ order, onUpdate }) {
                 e.stopPropagation();
                 setIsModifyDialogOpen(true);
               }}
+              disabled={isSaving}
             >
               Modify Original Form
             </Button>
