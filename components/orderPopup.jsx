@@ -246,24 +246,28 @@ export default function OrderPopup({ order, onUpdate }) {
       );
 
       if (!response.ok) {
-        throw new Error("Network response was not ok");
+        throw new Error(`Server error: ${response.status}`);
       }
 
       const data = await response.json();
 
-      // Only call onUpdate and close dialog after successful save
-      if (onUpdate) onUpdate();
+      // Close dialog immediately after successful save
       setIsDialogOpen(false);
+
+      // Call onUpdate after a brief delay to allow dialog to close smoothly
+      if (onUpdate) {
+        setTimeout(() => onUpdate(), 100);
+      }
     } catch (error) {
       console.error("Error updating order:", error);
-      // Don't close dialog on error so user can retry
     } finally {
       setIsSaving(false);
     }
   }
 
   async function displayOrderHTML() {
-    updateDatabase();
+    // Wait for database update to complete first
+    await updateDatabase();
 
     const finalShippingMethod =
       shippingMethod === "other" ? customShippingText : shippingMethod;
@@ -668,24 +672,20 @@ export default function OrderPopup({ order, onUpdate }) {
           </div>
 
           <DialogFooter>
-            <DialogClose asChild>
-              <Button
-                variant="outline"
-                onClick={updateDatabase}
-                disabled={isSaving}
-              >
-                {isSaving ? "Saving..." : "Save and Close"}
-              </Button>
-            </DialogClose>
-            <DialogClose asChild>
-              <Button
-                type="submit"
-                onClick={displayOrderHTML}
-                disabled={isSaving}
-              >
-                {isSaving ? "Saving..." : "Save and Print Order"}
-              </Button>
-            </DialogClose>
+            <Button
+              variant="outline"
+              onClick={updateDatabase}
+              disabled={isSaving}
+            >
+              {isSaving ? "Saving..." : "Save and Close"}
+            </Button>
+            <Button
+              type="submit"
+              onClick={displayOrderHTML}
+              disabled={isSaving}
+            >
+              {isSaving ? "Saving..." : "Save and Print Order"}
+            </Button>
             <Button onClick={printPackingSlip} disabled={isSaving}>
               Print Packing Slip
             </Button>
