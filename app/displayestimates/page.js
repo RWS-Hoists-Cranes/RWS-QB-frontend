@@ -25,6 +25,8 @@ import {
   Receipt,
   Building2,
   RefreshCw,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Search, X } from "lucide-react";
@@ -37,6 +39,92 @@ export default function Estimate() {
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [openMonths, setOpenMonths] = useState(new Set());
+
+  // Utility function to get month-year key from date
+  const getMonthYear = (dateString) => {
+    if (!dateString) return "Unknown";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "Unknown";
+    return date.toLocaleDateString("en-US", { year: "numeric", month: "long" });
+  };
+
+  // Utility function to group items by month-year
+  const groupByMonth = (items, getDateFn) => {
+    const grouped = {};
+    items.forEach((item) => {
+      const monthYear = getMonthYear(getDateFn(item));
+      if (!grouped[monthYear]) {
+        grouped[monthYear] = [];
+      }
+      grouped[monthYear].push(item);
+    });
+
+    // Sort months in descending order (newest first)
+    const sortedKeys = Object.keys(grouped).sort((a, b) => {
+      if (a === "Unknown") return 1;
+      if (b === "Unknown") return -1;
+      return new Date(b) - new Date(a);
+    });
+
+    const sortedGrouped = {};
+    sortedKeys.forEach((key) => {
+      // Sort items within each month by their primary identifier
+      sortedGrouped[key] = grouped[key];
+    });
+
+    return sortedGrouped;
+  };
+
+  // Sorting functions for each form type
+  const sortEstimates = (estimates) => {
+    return [...estimates].sort((a, b) => {
+      const aNum = parseInt(a.DocNumber) || 0;
+      const bNum = parseInt(b.DocNumber) || 0;
+      return bNum - aNum; // Descending order (newest first)
+    });
+  };
+
+  const sortOrders = (orders) => {
+    return [...orders].sort((a, b) => {
+      const aNum = parseInt(a.order_number) || 0;
+      const bNum = parseInt(b.order_number) || 0;
+      return bNum - aNum; // Descending order (newest first)
+    });
+  };
+
+  const sortPurchaseOrders = (purchaseOrders) => {
+    return [...purchaseOrders].sort((a, b) => {
+      const aNum = parseInt(a.DocNumber) || 0;
+      const bNum = parseInt(b.DocNumber) || 0;
+      return bNum - aNum; // Descending order (newest first)
+    });
+  };
+
+  const sortInvoices = (invoices) => {
+    return [...invoices].sort((a, b) => {
+      const aNum = parseInt(a.DocNumber) || 0;
+      const bNum = parseInt(b.DocNumber) || 0;
+      return bNum - aNum; // Descending order (newest first)
+    });
+  };
+
+  // Toggle month section open/closed
+  const toggleMonth = (monthYear) => {
+    const newOpenMonths = new Set(openMonths);
+    if (newOpenMonths.has(monthYear)) {
+      newOpenMonths.delete(monthYear);
+    } else {
+      newOpenMonths.add(monthYear);
+    }
+    setOpenMonths(newOpenMonths);
+  };
+
+  // Initialize with current month open
+  useEffect(() => {
+    const currentMonth = getMonthYear(new Date());
+    setOpenMonths(new Set([currentMonth]));
+  }, []);
 
   // Separate useEffect for each of the forms
   useEffect(() => {
@@ -252,16 +340,80 @@ export default function Estimate() {
   };
 
   // Get filtered data
-  const filteredEstimates = filterEstimates(estimates, searchTerm);
-  const filteredOrders = filterOrders(orders, searchTerm);
-  const filteredInvoices = filterInvoices(invoices, searchTerm);
-  const filteredPurchaseOrders = filterPurchaseOrders(
-    purchaseOrders,
-    searchTerm
+  const filteredEstimates = sortEstimates(
+    filterEstimates(estimates, searchTerm)
+  );
+  const filteredOrders = sortOrders(filterOrders(orders, searchTerm));
+  const filteredInvoices = sortInvoices(filterInvoices(invoices, searchTerm));
+  const filteredPurchaseOrders = sortPurchaseOrders(
+    filterPurchaseOrders(purchaseOrders, searchTerm)
+  );
+
+  // Group filtered and sorted data by month
+  const groupedEstimates = groupByMonth(
+    filteredEstimates,
+    (estimate) => estimate.TxnDate
+  );
+  const groupedOrders = groupByMonth(
+    filteredOrders,
+    (order) => order.estimate?.TxnDate || order.date_ordered
+  );
+  const groupedInvoices = groupByMonth(
+    filteredInvoices,
+    (invoice) => invoice.order?.date_ordered || invoice.TxnDate
+  );
+  const groupedPurchaseOrders = groupByMonth(
+    filteredPurchaseOrders,
+    (po) => po.dbData?.date_ordered || po.TxnDate
   );
 
   const clearSearch = () => {
     setSearchTerm("");
+  };
+
+  // Component for rendering month sections
+  const MonthSection = ({ monthYear, items, children, totalCount }) => {
+    const isOpen = openMonths.has(monthYear);
+
+    return (
+      <div className="border border-slate-200 rounded mb-3 overflow-hidden">
+        <div
+          className="flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 cursor-pointer transition-all duration-200"
+          onClick={() => toggleMonth(monthYear)}
+        >
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-center w-5 h-5 rounded-full bg-white">
+              {isOpen ? (
+                <ChevronDown className="w-2.5 h-2.5 text-slate-600" />
+              ) : (
+                <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
+              )}
+            </div>
+            <span className="font-medium text-slate-800 text-sm">
+              {monthYear}
+            </span>
+            <Badge
+              variant="outline"
+              className="text-xs bg-white border-slate-300 text-slate-700 px-2 py-0.5 h-5"
+            >
+              {items.length}
+            </Badge>
+          </div>
+        </div>
+        {isOpen && (
+          <div className="bg-white max-h-[78vh] overflow-y-auto">
+            <Table>
+              <TableHeader className="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
+                {children.tableHeader}
+              </TableHeader>
+              <TableBody className="divide-y divide-slate-100">
+                {children.tableBody}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </div>
+    );
   };
 
   const tabData = [
@@ -304,24 +456,22 @@ export default function Estimate() {
       <FilterDrawer />
 
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 dark:border-slate-700 sticky top-0 z-40">
+      <div className="bg-white border-b border-slate-200 dark:border-slate-700 sticky top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-12">
             <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
-                <Building2 className="w-4 h-4 text-white" />
+              <div className="w-6 h-6 bg-gradient-to-br from-blue-600 to-blue-700 rounded flex items-center justify-center">
+                <Building2 className="w-3 h-3 text-white" />
               </div>
-              <div>
-                <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                  RWS Dashboard
-                </h1>
-              </div>
+              <h1 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                RWS Dashboard
+              </h1>
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setReload((prev) => !prev)}
-              className="hidden sm:flex h-8"
+              className="hidden sm:flex h-7 px-3 text-xs"
             >
               <RefreshCw className="w-3 h-3 mr-1" />
               Refresh
@@ -331,289 +481,385 @@ export default function Estimate() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-2 lg:px-8 py-2">
-        <div className="">
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-2">
+        <div className="space-y-2">
           {/* Search Bar */}
-          <Card className="w-fit ml-auto border shadow-sm bg-white">
-            <CardContent className="p-0">
-              <div className="relative max-w-sm mx-auto">
-                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-slate-400 w-3 h-3" />
-                <Input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-7 pr-7 h-8 text-sm border-slate-200 focus:ring-1 focus:ring-blue-500"
-                />
-                {searchTerm && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearSearch}
-                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-slate-100"
-                  >
-                    <X className="w-2 h-2" />
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex justify-end">
+            <Card className="w-full max-w-sm border shadow-sm bg-white">
+              <CardContent className="p-2">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-slate-400 w-3.5 h-3.5" />
+                  <Input
+                    type="text"
+                    placeholder="Search..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-8 pr-8 h-8 text-sm border-slate-200 focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  {searchTerm && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearSearch}
+                      className="absolute right-1 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-slate-100 rounded-full"
+                    >
+                      <X className="w-2.5 h-2.5" />
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
           <Tabs defaultValue="quotes" className="space-y-3">
             {/* Tabs */}
-            <TabsList className="grid w-full max-w-lg mx-auto grid-cols-2 lg:grid-cols-4 h-auto p-0.5 bg-slate-100">
-              {tabData.map((tab) => (
-                <TabsTrigger
-                  key={tab.value}
-                  value={tab.value}
-                  onClick={handleTabClick}
-                  className="flex items-center space-x-1 data-[state=active]:bg-white data-[state=active]:shadow-sm py-2 px-2 text-xs font-medium"
-                >
-                  {}
-                  <span className="hidden sm:inline">{tab.label}</span>
-                  <span className="sm:hidden">{tab.label.split(" ")[0]}</span>
-                  <Badge
-                    variant="secondary"
-                    className={`ml-auto text-xs h-4 px-1 ${
-                      searchTerm && tab.count !== tab.totalCount
-                        ? "bg-orange-100 text-orange-800"
-                        : "bg-slate-200 text-slate-700"
-                    }`}
+            <div className="bg-white rounded border border-slate-200 p-1">
+              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 h-auto p-0 bg-transparent gap-1">
+                {tabData.map((tab) => (
+                  <TabsTrigger
+                    key={tab.value}
+                    value={tab.value}
+                    onClick={handleTabClick}
+                    className="flex items-center justify-between data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-blue-200 py-2 px-3 text-sm font-medium rounded transition-all duration-200 hover:bg-slate-50"
                   >
-                    {searchTerm && tab.count !== tab.totalCount
-                      ? `${tab.count}/${tab.totalCount}`
-                      : tab.count}
-                  </Badge>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-
+                    <div className="flex items-center space-x-1.5">
+                      <div className="w-3.5 h-3.5">{tab.icon}</div>
+                      <span className="hidden sm:inline">{tab.label}</span>
+                      <span className="sm:hidden">
+                        {tab.label.split(" ")[0]}
+                      </span>
+                    </div>
+                    <Badge
+                      variant="secondary"
+                      className={`text-xs h-4 px-1.5 ${
+                        searchTerm && tab.count !== tab.totalCount
+                          ? "bg-orange-100 text-orange-800 border-orange-200"
+                          : "bg-slate-100 text-slate-700 border-slate-200"
+                      }`}
+                    >
+                      {searchTerm && tab.count !== tab.totalCount
+                        ? `${tab.count}/${tab.totalCount}`
+                        : tab.count}
+                    </Badge>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
             {/* Tab Content */}
-            <TabsContent value="quotes">
-              <Card className="border shadow-sm bg-white">
-                <CardHeader className="pb-3">
+            <TabsContent value="quotes" className="mt-3">
+              <Card className="border bg-white">
+                <CardHeader className="pb-3 border-b border-slate-100">
                   <CardTitle className="flex items-center justify-between text-base">
                     <div className="flex items-center space-x-2">
-                      <FileText className="w-4 h-4" />
-                      <span>Quotes</span>
+                      <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center">
+                        <FileText className="w-3 h-3 text-blue-600" />
+                      </div>
+                      <span className="text-slate-800">Quotes</span>
                     </div>
                     {searchTerm &&
                       filteredEstimates.length !== estimates.length && (
-                        <span className="text-xs text-slate-500">
-                          {filteredEstimates.length} of {estimates.length}
+                        <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">
+                          {filteredEstimates.length}/{estimates.length}
                         </span>
                       )}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="pt-0">
+                <CardContent className="pt-3 px-0">
                   {filteredEstimates.length === 0 && searchTerm ? (
-                    <div className="text-center py-6 text-sm text-slate-500">
-                      {`No quotes found matching "${searchTerm}"`}
+                    <div className="text-center py-8 text-slate-500 px-6">
+                      <FileText className="w-8 h-8 text-slate-300 mx-auto mb-3" />
+                      <p className="text-sm font-medium mb-1">
+                        No quotes found
+                      </p>
+                      <p className="text-xs">{`No quotes match "${searchTerm}"`}</p>
+                    </div>
+                  ) : Object.keys(groupedEstimates).length === 0 ? (
+                    <div className="text-center py-8 text-slate-500 px-6">
+                      <FileText className="w-8 h-8 text-slate-300 mx-auto mb-3" />
+                      <p className="text-sm font-medium mb-1">
+                        Forms Loading
+                      </p>
+                      <p className="text-xs">
+                        Initial website launch may take up to 5s
+                      </p>
                     </div>
                   ) : (
-                    <div className="max-h-[90%] overflow-y-auto">
-                      <Table>
-                        <TableHeader className="sticky top-0 bg-white z-10">
-                          <TableRow>
-                            <TableHead className="text-xs font-medium h-8">
-                              Quote No.
-                            </TableHead>
-                            <TableHead className="text-xs font-medium h-8">
-                              Customer
-                            </TableHead>
-                            <TableHead className="text-xs font-medium h-8">
-                              Date Quoted
-                            </TableHead>
-                            <TableHead className="text-xs font-medium h-8 text-right">
-                              Actions
-                            </TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredEstimates.map((estimate) => (
-                            <EstimatePopup
-                              estimate={estimate}
-                              key={estimate.Id}
-                              onUpdate={handleUpdate}
-                            />
-                          ))}
-                        </TableBody>
-                      </Table>
+                    <div className="max-h-[82vh] overflow-y-auto px-4 space-y-3">
+                      {Object.entries(groupedEstimates).map(
+                        ([monthYear, monthEstimates]) => (
+                          <MonthSection
+                            key={monthYear}
+                            monthYear={monthYear}
+                            items={monthEstimates}
+                            children={{
+                              tableHeader: (
+                                <TableRow>
+                                  <TableHead className="text-xs font-semibold h-8 text-slate-600 py-2">
+                                    Quote No.
+                                  </TableHead>
+                                  <TableHead className="text-xs font-semibold h-8 text-slate-600 py-2">
+                                    Customer
+                                  </TableHead>
+                                  <TableHead className="text-xs font-semibold h-8 text-slate-600 py-2">
+                                    Date Quoted
+                                  </TableHead>
+                                  <TableHead className="text-xs font-semibold h-8 text-right text-slate-600 py-2">
+                                    Actions
+                                  </TableHead>
+                                </TableRow>
+                              ),
+                              tableBody: monthEstimates.map((estimate) => (
+                                <EstimatePopup
+                                  estimate={estimate}
+                                  key={estimate.Id}
+                                  onUpdate={handleUpdate}
+                                />
+                              )),
+                            }}
+                          />
+                        )
+                      )}
                     </div>
                   )}
                 </CardContent>
               </Card>
             </TabsContent>
-
-            <TabsContent value="order_form">
-              <Card className="border shadow-sm bg-white">
-                <CardHeader className="pb-3">
+            <TabsContent value="order_form" className="mt-3">
+              <Card className="border bg-white">
+                <CardHeader className="pb-3 border-b border-slate-100">
                   <CardTitle className="flex items-center justify-between text-base">
                     <div className="flex items-center space-x-2">
-                      <ShoppingCart className="w-4 h-4" />
-                      <span>Order Forms</span>
+                      <div className="w-6 h-6 bg-orange-100 rounded flex items-center justify-center">
+                        <ShoppingCart className="w-3 h-3 text-orange-600" />
+                      </div>
+                      <span className="text-slate-800">Order Forms</span>
                     </div>
                     {searchTerm && filteredOrders.length !== orders.length && (
-                      <span className="text-xs text-slate-500">
-                        {filteredOrders.length} of {orders.length}
+                      <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">
+                        {filteredOrders.length}/{orders.length}
                       </span>
                     )}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="pt-0">
+                <CardContent className="pt-3 px-0">
                   {filteredOrders.length === 0 && searchTerm ? (
-                    <div className="text-center py-6 text-sm text-slate-500">
-                      {`No order forms found matching "${searchTerm}"`}
+                    <div className="text-center py-8 text-slate-500 px-6">
+                      <ShoppingCart className="w-8 h-8 text-slate-300 mx-auto mb-3" />
+                      <p className="text-sm font-medium mb-1">
+                        No order forms found
+                      </p>
+                      <p className="text-xs">{`No order forms match "${searchTerm}"`}</p>
+                    </div>
+                  ) : Object.keys(groupedOrders).length === 0 ? (
+                    <div className="text-center py-8 text-slate-500 px-6">
+                      <ShoppingCart className="w-8 h-8 text-slate-300 mx-auto mb-3" />
+                      <p className="text-sm font-medium mb-1">
+                        No order forms available
+                      </p>
+                      <p className="text-xs">
+                        Order forms will appear here when created
+                      </p>
                     </div>
                   ) : (
-                    <div className="max-h-[90%] overflow-y-auto">
-                      <Table>
-                        <TableHeader className="sticky top-0 bg-white z-10">
-                          <TableRow>
-                            <TableHead className="text-xs font-medium h-8">
-                              Order No.
-                            </TableHead>
-                            <TableHead className="text-xs font-medium h-8">
-                              Customer
-                            </TableHead>
-                            <TableHead className="text-xs font-medium h-8">
-                              Customer PO
-                            </TableHead>
-                            <TableHead className="text-xs font-medium h-8">
-                              Quotation Ref.
-                            </TableHead>
-                            <TableHead className="text-xs font-medium h-8 text-right">
-                              Date Ordered
-                            </TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredOrders.map((order) => (
-                            <OrderPopup
-                              order={order}
-                              key={`${order.order_number || "no-order"}-${
-                                order.quotation_number || "no-quote"
-                              }-${order.id || Math.random()}`}
-                              onUpdate={handleUpdate}
-                            />
-                          ))}
-                        </TableBody>
-                      </Table>
+                    <div className="max-h-[82vh] overflow-y-auto px-4 space-y-3">
+                      {Object.entries(groupedOrders).map(
+                        ([monthYear, monthOrders]) => (
+                          <MonthSection
+                            key={monthYear}
+                            monthYear={monthYear}
+                            items={monthOrders}
+                            children={{
+                              tableHeader: (
+                                <TableRow>
+                                  <TableHead className="text-xs font-semibold h-8 text-slate-600 py-2">
+                                    Order No.
+                                  </TableHead>
+                                  <TableHead className="text-xs font-semibold h-8 text-slate-600 py-2">
+                                    Customer
+                                  </TableHead>
+                                  <TableHead className="text-xs font-semibold h-8 text-slate-600 py-2">
+                                    Customer PO
+                                  </TableHead>
+                                  <TableHead className="text-xs font-semibold h-8 text-slate-600 py-2">
+                                    Quotation Ref.
+                                  </TableHead>
+                                  <TableHead className="text-xs font-semibold h-8 text-right text-slate-600 py-2">
+                                    Date Ordered
+                                  </TableHead>
+                                </TableRow>
+                              ),
+                              tableBody: monthOrders.map((order) => (
+                                <OrderPopup
+                                  order={order}
+                                  key={`${order.order_number || "no-order"}-${
+                                    order.quotation_number || "no-quote"
+                                  }-${order.id || Math.random()}`}
+                                  onUpdate={handleUpdate}
+                                />
+                              )),
+                            }}
+                          />
+                        )
+                      )}
                     </div>
                   )}
                 </CardContent>
               </Card>
             </TabsContent>
-
-            <TabsContent value="purchase_order">
-              <Card className="border shadow-sm bg-white">
-                <CardHeader className="pb-3">
+            <TabsContent value="purchase_order" className="mt-3">
+              <Card className="border bg-white">
+                <CardHeader className="pb-3 border-b border-slate-100">
                   <CardTitle className="flex items-center justify-between text-base">
                     <div className="flex items-center space-x-2">
-                      <Package className="w-4 h-4" />
-                      <span>Purchase Orders</span>
+                      <div className="w-6 h-6 bg-green-100 rounded flex items-center justify-center">
+                        <Package className="w-3 h-3 text-green-600" />
+                      </div>
+                      <span className="text-slate-800">Purchase Orders</span>
                     </div>
                     {searchTerm &&
                       filteredPurchaseOrders.length !==
                         purchaseOrders.length && (
-                        <span className="text-xs text-slate-500">
-                          {filteredPurchaseOrders.length} of{" "}
+                        <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">
+                          {filteredPurchaseOrders.length}/
                           {purchaseOrders.length}
                         </span>
                       )}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="pt-0">
+                <CardContent className="pt-3 px-0">
                   {filteredPurchaseOrders.length === 0 && searchTerm ? (
-                    <div className="text-center py-6 text-sm text-slate-500">
-                      {`No purchase orders found matching "${searchTerm}"`}
+                    <div className="text-center py-8 text-slate-500 px-6">
+                      <Package className="w-8 h-8 text-slate-300 mx-auto mb-3" />
+                      <p className="text-sm font-medium mb-1">
+                        No purchase orders found
+                      </p>
+                      <p className="text-xs">{`No purchase orders match "${searchTerm}"`}</p>
+                    </div>
+                  ) : Object.keys(groupedPurchaseOrders).length === 0 ? (
+                    <div className="text-center py-8 text-slate-500 px-6">
+                      <Package className="w-8 h-8 text-slate-300 mx-auto mb-3" />
+                      <p className="text-sm font-medium mb-1">
+                        No purchase orders available
+                      </p>
+                      <p className="text-xs">
+                        Purchase orders will appear here when created
+                      </p>
                     </div>
                   ) : (
-                    <div className="max-h-[90%] overflow-y-auto">
-                      <Table>
-                        <TableHeader className="sticky top-0 bg-white z-10">
-                          <TableRow>
-                            <TableHead className="text-xs font-medium h-8">
-                              PO No.
-                            </TableHead>
-                            <TableHead className="text-xs font-medium h-8">
-                              Vendor
-                            </TableHead>
-                            <TableHead className="text-xs font-medium h-8">
-                              R.W.S. JOB NO.
-                            </TableHead>
-                            <TableHead className="text-xs font-medium h-8 text-right">
-                              Date Ordered
-                            </TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredPurchaseOrders.map((po, index) => (
-                            <PurchaseOrderPopup
-                              purchaseOrder={po}
-                              key={po.DocNumber || index}
-                              onUpdate={handleUpdate}
-                            />
-                          ))}
-                        </TableBody>
-                      </Table>
+                    <div className="max-h-[82vh] overflow-y-auto px-4 space-y-3">
+                      {Object.entries(groupedPurchaseOrders).map(
+                        ([monthYear, monthPOs]) => (
+                          <MonthSection
+                            key={monthYear}
+                            monthYear={monthYear}
+                            items={monthPOs}
+                            children={{
+                              tableHeader: (
+                                <TableRow>
+                                  <TableHead className="text-xs font-semibold h-8 text-slate-600 py-2">
+                                    PO No.
+                                  </TableHead>
+                                  <TableHead className="text-xs font-semibold h-8 text-slate-600 py-2">
+                                    Vendor
+                                  </TableHead>
+                                  <TableHead className="text-xs font-semibold h-8 text-slate-600 py-2">
+                                    R.W.S. JOB NO.
+                                  </TableHead>
+                                  <TableHead className="text-xs font-semibold h-8 text-right text-slate-600 py-2">
+                                    Date Ordered
+                                  </TableHead>
+                                </TableRow>
+                              ),
+                              tableBody: monthPOs.map((po, index) => (
+                                <PurchaseOrderPopup
+                                  purchaseOrder={po}
+                                  key={po.DocNumber || index}
+                                  onUpdate={handleUpdate}
+                                />
+                              )),
+                            }}
+                          />
+                        )
+                      )}
                     </div>
                   )}
                 </CardContent>
               </Card>
-            </TabsContent>
-
-            <TabsContent value="invoice">
-              <Card className="border shadow-sm bg-white">
-                <CardHeader className="pb-3">
+            </TabsContent>{" "}
+            <TabsContent value="invoice" className="mt-3">
+              <Card className="border bg-white">
+                <CardHeader className="pb-3 border-b border-slate-100">
                   <CardTitle className="flex items-center justify-between text-base">
                     <div className="flex items-center space-x-2">
-                      <Receipt className="w-4 h-4" />
-                      <span>Invoices</span>
+                      <div className="w-6 h-6 bg-purple-100 rounded flex items-center justify-center">
+                        <Receipt className="w-3 h-3 text-purple-600" />
+                      </div>
+                      <span className="text-slate-800">Invoices</span>
                     </div>
                     {searchTerm &&
                       filteredInvoices.length !== invoices.length && (
-                        <span className="text-xs text-slate-500">
-                          {filteredInvoices.length} of {invoices.length}
+                        <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">
+                          {filteredInvoices.length}/{invoices.length}
                         </span>
                       )}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="pt-0">
+                <CardContent className="pt-3 px-0">
                   {filteredInvoices.length === 0 && searchTerm ? (
-                    <div className="text-center py-6 text-sm text-slate-500">
-                      {`No invoices found matching "${searchTerm}"`}
+                    <div className="text-center py-8 text-slate-500 px-6">
+                      <Receipt className="w-8 h-8 text-slate-300 mx-auto mb-3" />
+                      <p className="text-sm font-medium mb-1">
+                        No invoices found
+                      </p>
+                      <p className="text-xs">{`No invoices match "${searchTerm}"`}</p>
+                    </div>
+                  ) : Object.keys(groupedInvoices).length === 0 ? (
+                    <div className="text-center py-8 text-slate-500 px-6">
+                      <Receipt className="w-8 h-8 text-slate-300 mx-auto mb-3" />
+                      <p className="text-sm font-medium mb-1">
+                        No invoices available
+                      </p>
+                      <p className="text-xs">
+                        Invoices will appear here when created
+                      </p>
                     </div>
                   ) : (
-                    <div className="max-h-[90%] overflow-y-auto">
-                      <Table>
-                        <TableHeader className="sticky top-0 bg-white z-10">
-                          <TableRow>
-                            <TableHead className="text-xs font-medium h-8">
-                              Invoice No.
-                            </TableHead>
-                            <TableHead className="text-xs font-medium h-8">
-                              Customer PO
-                            </TableHead>
-                            <TableHead className="text-xs font-medium h-8">
-                              R.W.S. Job No.
-                            </TableHead>
-                            <TableHead className="text-xs font-medium h-8 text-right">
-                              Invoice Date
-                            </TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredInvoices.map((invoice, index) => (
-                            <InvoicePopup
-                              invoice={invoice}
-                              key={index}
-                              index={index}
-                              onUpdate={handleUpdate}
-                            />
-                          ))}
-                        </TableBody>
-                      </Table>
+                    <div className="max-h-[82vh] overflow-y-auto px-4 space-y-3">
+                      {Object.entries(groupedInvoices).map(
+                        ([monthYear, monthInvoices]) => (
+                          <MonthSection
+                            key={monthYear}
+                            monthYear={monthYear}
+                            items={monthInvoices}
+                            children={{
+                              tableHeader: (
+                                <TableRow>
+                                  <TableHead className="text-xs font-semibold h-8 text-slate-600 py-2">
+                                    Invoice No.
+                                  </TableHead>
+                                  <TableHead className="text-xs font-semibold h-8 text-slate-600 py-2">
+                                    Customer PO
+                                  </TableHead>
+                                  <TableHead className="text-xs font-semibold h-8 text-slate-600 py-2">
+                                    R.W.S. Job No.
+                                  </TableHead>
+                                  <TableHead className="text-xs font-semibold h-8 text-right text-slate-600 py-2">
+                                    Invoice Date
+                                  </TableHead>
+                                </TableRow>
+                              ),
+                              tableBody: monthInvoices.map((invoice, index) => (
+                                <InvoicePopup
+                                  invoice={invoice}
+                                  key={index}
+                                  index={index}
+                                  onUpdate={handleUpdate}
+                                />
+                              )),
+                            }}
+                          />
+                        )
+                      )}
                     </div>
                   )}
                 </CardContent>
