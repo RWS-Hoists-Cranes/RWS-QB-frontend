@@ -46,7 +46,16 @@ export default function Estimate() {
     if (!dateString) return "Unknown";
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "Unknown";
-    return date.toLocaleDateString("en-US", { year: "numeric", month: "long" });
+
+    // Use UTC methods to avoid timezone issues with month boundaries
+    const year = date.getUTCFullYear();
+    const month = date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      timeZone: "UTC",
+    });
+
+    return month;
   };
 
   // Utility function to group items by month-year
@@ -64,7 +73,11 @@ export default function Estimate() {
     const sortedKeys = Object.keys(grouped).sort((a, b) => {
       if (a === "Unknown") return 1;
       if (b === "Unknown") return -1;
-      return new Date(b) - new Date(a);
+
+      // Parse "Month YYYY" format properly
+      const dateA = new Date(a + " 1"); // Add day to make it parseable
+      const dateB = new Date(b + " 1");
+      return dateB - dateA;
     });
 
     const sortedGrouped = {};
@@ -360,11 +373,11 @@ export default function Estimate() {
   );
   const groupedInvoices = groupByMonth(
     filteredInvoices,
-    (invoice) => invoice.order?.date_ordered || invoice.TxnDate
+    (invoice) => invoice.TxnDate || invoice.order?.date_ordered
   );
   const groupedPurchaseOrders = groupByMonth(
     filteredPurchaseOrders,
-    (po) => po.dbData?.date_ordered || po.TxnDate
+    (po) => po.TxnDate || po.dbData?.date_ordered
   );
 
   const clearSearch = () => {
@@ -486,7 +499,7 @@ export default function Estimate() {
           {/* Search Bar */}
           <div className="flex justify-end">
             <Card className="w-full max-w-sm border shadow-sm bg-white">
-              <CardContent className="p-2">
+              <CardContent className="p-0">
                 <div className="relative">
                   <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-slate-400 w-3.5 h-3.5" />
                   <Input
@@ -838,6 +851,9 @@ export default function Estimate() {
                                 <TableRow>
                                   <TableHead className="text-xs font-semibold h-8 text-slate-600 py-2">
                                     Invoice No.
+                                  </TableHead>
+                                  <TableHead className="text-xs font-semibold h-8 text-slate-600 py-2">
+                                    Customer
                                   </TableHead>
                                   <TableHead className="text-xs font-semibold h-8 text-slate-600 py-2">
                                     Customer PO

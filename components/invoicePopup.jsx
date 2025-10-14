@@ -33,7 +33,9 @@ import { useEffect, useState } from "react";
 
 export default function InvoicePopup({ invoice, index, onUpdate }) {
   const [gst, setGst] = useState(invoice.gst_number || "");
-  const [customerPO, setCustomerPO] = useState(invoice.customer_po || "");
+  const [customerPO, setCustomerPO] = useState(
+    invoice.customer_po || invoice.order?.customer_PO || ""
+  );
   // Auto-populate comments from order if invoice comments are empty
   const [comments, setComments] = useState(
     invoice.comments || invoice.order?.comments || ""
@@ -200,6 +202,11 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
           onClick={() => setIsDialogOpen(true)}
         >
           <TableCell className="font-medium">{invoice.DocNumber}</TableCell>
+          <TableCell className="">
+            {invoice.CustomerRef?.name ||
+              invoice.estimate?.CustomerRef?.name ||
+              ""}
+          </TableCell>
           <TableCell className="">{invoice.order?.customer_PO || ""}</TableCell>
           <TableCell className="">
             {invoice.order?.order_number || ""}

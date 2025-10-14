@@ -286,7 +286,6 @@ export default function EstimatePopup({ estimate, onUpdate }) {
                   onCheckedChange={acceptestimate}
                   onClick={(e) => {
                     e.stopPropagation();
-                    e.preventDefault();
                   }}
                 />
               </TableCell>
