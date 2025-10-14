@@ -41,6 +41,7 @@ export default function EstimatePopup({ estimate, onUpdate }) {
   );
   const itemQuantityOrdered = {};
   const [itemQuantities, setItemQuantities] = useState({});
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const initializeItemQuantity = (estimate) => {
     const initialItemQuantities = {};
@@ -264,9 +265,16 @@ export default function EstimatePopup({ estimate, onUpdate }) {
       {(estimate.TxnStatus === "Pending" ||
         estimate.TxnStatus === "Accepted" ||
         estimate.TxnStatus === "Converted") && (
-        <Dialog key={estimate.DocNumber}>
+        <Dialog
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          key={estimate.DocNumber}
+        >
           <DialogTrigger asChild>
-            <TableRow>
+            <TableRow
+              className="cursor-pointer hover:bg-gray-100"
+              onClick={() => setIsDialogOpen(true)}
+            >
               <TableCell className="font-medium">
                 {estimate.DocNumber}
               </TableCell>
@@ -276,7 +284,10 @@ export default function EstimatePopup({ estimate, onUpdate }) {
                 <Switch
                   checked={switchState}
                   onCheckedChange={acceptestimate}
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                  }}
                 />
               </TableCell>
             </TableRow>

@@ -228,7 +228,12 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
           </TableCell>
           <TableCell className="text-right">
             <DropdownMenu>
-              <DropdownMenuTrigger>
+              <DropdownMenuTrigger
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                }}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -245,7 +250,7 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
                   <circle cx="5" cy="12" r="1"></circle>
                 </svg>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
+              <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation();

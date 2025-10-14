@@ -657,7 +657,7 @@ export default function Estimate() {
                         No order forms available
                       </p>
                       <p className="text-xs">
-                        Order forms will appear here when created
+                        Initial website launch may take up to 5s
                       </p>
                     </div>
                   ) : (
@@ -742,7 +742,7 @@ export default function Estimate() {
                         No purchase orders available
                       </p>
                       <p className="text-xs">
-                        Purchase orders will appear here when created
+                        Initial website launch may take up to 5s
                       </p>
                     </div>
                   ) : (
@@ -820,7 +820,7 @@ export default function Estimate() {
                         No invoices available
                       </p>
                       <p className="text-xs">
-                        Invoices will appear here when created
+                        Initial website launch may take up to 5s
                       </p>
                     </div>
                   ) : (

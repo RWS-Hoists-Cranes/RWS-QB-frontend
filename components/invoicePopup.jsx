@@ -34,12 +34,16 @@ import { useEffect, useState } from "react";
 export default function InvoicePopup({ invoice, index, onUpdate }) {
   const [gst, setGst] = useState(invoice.gst_number || "");
   const [customerPO, setCustomerPO] = useState(invoice.customer_po || "");
-  const [comments, setComments] = useState(invoice.comments || "");
+  // Auto-populate comments from order if invoice comments are empty
+  const [comments, setComments] = useState(
+    invoice.comments || invoice.order?.comments || ""
+  );
   const [shippingDate, setShippingDate] = useState(
     invoice.shipping_date
       ? new Date(invoice.shipping_date).toISOString().split("T")[0]
       : ""
   );
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const saveData = async () => {
     try {
@@ -189,9 +193,12 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
   };
 
   return (
-    <Dialog key={index}>
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} key={index}>
       <DialogTrigger asChild>
-        <TableRow className="cursor-pointer hover:bg-gray-100">
+        <TableRow
+          className="cursor-pointer hover:bg-gray-100"
+          onClick={() => setIsDialogOpen(true)}
+        >
           <TableCell className="font-medium">{invoice.DocNumber}</TableCell>
           <TableCell className="">{invoice.order?.customer_PO || ""}</TableCell>
           <TableCell className="">
@@ -202,7 +209,12 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
           </TableCell>
           <TableCell className="text-right">
             <DropdownMenu>
-              <DropdownMenuTrigger onClick={(e) => e.stopPropagation()}>
+              <DropdownMenuTrigger
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                }}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -219,7 +231,7 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
                   <circle cx="5" cy="12" r="1"></circle>
                 </svg>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
+              <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation();

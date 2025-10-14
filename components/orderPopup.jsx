@@ -1,16 +1,6 @@
 "use client";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useRouter } from "next/navigation";
-// import {
-//   Table,
-//   TableBody,
-//   TableCaption,
-//   TableCell,
-//   TableFooter,
-//   TableHead,
-//   TableHeader,
-//   TableRow,
-// } from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -117,7 +107,9 @@ export default function OrderPopup({ order, onUpdate }) {
   const [billingType, setBillingType] = useState(
     order.billing_type || "COLLECT"
   );
-  const [comments, setComments] = useState(order.comments);
+  const [comments, setComments] = useState(
+    order.comments || "ORDERED BY " + (order.dbEstimate?.customer_ref || "")
+  );
   const [quotationNumber, setQuotationNumber] = useState(
     order.quotation_number
   );
