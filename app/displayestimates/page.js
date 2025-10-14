@@ -576,9 +576,7 @@ export default function Estimate() {
                   ) : Object.keys(groupedEstimates).length === 0 ? (
                     <div className="text-center py-8 text-slate-500 px-6">
                       <FileText className="w-8 h-8 text-slate-300 mx-auto mb-3" />
-                      <p className="text-sm font-medium mb-1">
-                        Forms Loading
-                      </p>
+                      <p className="text-sm font-medium mb-1">Forms Loading</p>
                       <p className="text-xs">
                         Initial website launch may take up to 5s
                       </p>
@@ -591,7 +589,8 @@ export default function Estimate() {
                             key={monthYear}
                             monthYear={monthYear}
                             items={monthEstimates}
-                            children={{
+                          >
+                            {{
                               tableHeader: (
                                 <TableRow>
                                   <TableHead className="text-xs font-semibold h-8 text-slate-600 py-2">
@@ -616,7 +615,7 @@ export default function Estimate() {
                                 />
                               )),
                             }}
-                          />
+                          </MonthSection>
                         )
                       )}
                     </div>
@@ -668,7 +667,8 @@ export default function Estimate() {
                             key={monthYear}
                             monthYear={monthYear}
                             items={monthOrders}
-                            children={{
+                          >
+                            {{
                               tableHeader: (
                                 <TableRow>
                                   <TableHead className="text-xs font-semibold h-8 text-slate-600 py-2">
@@ -698,7 +698,7 @@ export default function Estimate() {
                                 />
                               )),
                             }}
-                          />
+                          </MonthSection>
                         )
                       )}
                     </div>
@@ -753,7 +753,8 @@ export default function Estimate() {
                             key={monthYear}
                             monthYear={monthYear}
                             items={monthPOs}
-                            children={{
+                          >
+                            {{
                               tableHeader: (
                                 <TableRow>
                                   <TableHead className="text-xs font-semibold h-8 text-slate-600 py-2">
@@ -778,7 +779,7 @@ export default function Estimate() {
                                 />
                               )),
                             }}
-                          />
+                          </MonthSection>
                         )
                       )}
                     </div>
@@ -831,7 +832,8 @@ export default function Estimate() {
                             key={monthYear}
                             monthYear={monthYear}
                             items={monthInvoices}
-                            children={{
+                          >
+                            {{
                               tableHeader: (
                                 <TableRow>
                                   <TableHead className="text-xs font-semibold h-8 text-slate-600 py-2">
@@ -857,7 +859,7 @@ export default function Estimate() {
                                 />
                               )),
                             }}
-                          />
+                          </MonthSection>
                         )
                       )}
                     </div>
