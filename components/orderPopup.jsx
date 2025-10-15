@@ -118,6 +118,7 @@ export default function OrderPopup({ order, onUpdate }) {
   // States for modify original form dialog
   const [isModifyDialogOpen, setIsModifyDialogOpen] = useState(false);
   const [itemQuantities, setItemQuantities] = useState({});
+  const [originalQuantities, setOriginalQuantities] = useState({});
 
   // Loading states
   const [isSaving, setIsSaving] = useState(false);
@@ -151,6 +152,7 @@ export default function OrderPopup({ order, onUpdate }) {
             const data = await response.json();
             if (data.quantities && Object.keys(data.quantities).length > 0) {
               setItemQuantities(data.quantities);
+              setOriginalQuantities(data.originalQuantities || {});
               return;
             }
           }
@@ -282,6 +284,7 @@ export default function OrderPopup({ order, onUpdate }) {
             dateOrdered,
             order,
             ship_to: shipTo,
+            // Don't pass modifiedQuantities - backend will use original_quantity from database
           }),
         }
       );
@@ -291,6 +294,42 @@ export default function OrderPopup({ order, onUpdate }) {
       console.error("Error fetching HTML:", error);
     }
   }
+
+  const printOriginalOrder = async () => {
+    // Wait for database update to complete first
+    await updateDatabase();
+
+    const finalShippingMethod =
+      shippingMethod === "other" ? customShippingText : shippingMethod;
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orderHTML`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            orderNumber,
+            customerPO,
+            shippingMethod: finalShippingMethod,
+            billingType,
+            comments,
+            quotationNumber,
+            dateOrdered,
+            order,
+            ship_to: shipTo,
+            useOriginalQuantities: true, // Signal backend to use original_quantity
+          }),
+        }
+      );
+      const html = await response.text();
+      openHtmlInNewTab(html);
+    } catch (error) {
+      console.error("Error fetching original order HTML:", error);
+    }
+  };
 
   const openHtmlInNewTab = (htmlContent) => {
     const newWindow = window.open("");
@@ -673,10 +712,10 @@ export default function OrderPopup({ order, onUpdate }) {
             </Button>
             <Button
               type="submit"
-              onClick={displayOrderHTML}
+              onClick={printOriginalOrder}
               disabled={isSaving}
             >
-              {isSaving ? "Saving..." : "Save and Print Order"}
+              {isSaving ? "Saving..." : "Print Original Order"}
             </Button>
             <Button onClick={printPackingSlip} disabled={isSaving}>
               Print Packing Slip
@@ -714,14 +753,17 @@ export default function OrderPopup({ order, onUpdate }) {
               <Table>
                 <TableHeader>
                   <TableRow className="border-b">
-                    <TableHead className="text-left font-semibold py-3 px-4 w-[40%]">
+                    <TableHead className="text-left font-semibold py-3 px-4 w-[35%]">
                       Item Name
                     </TableHead>
                     <TableHead className="text-center font-semibold py-3 px-4 w-[20%]">
-                      Original Qty
+                      Estimate Qty
                     </TableHead>
-                    <TableHead className="text-center font-semibold py-3 px-4 w-[40%]">
-                      New Order Qty
+                    <TableHead className="text-center font-semibold py-3 px-4 w-[20%]">
+                      Current Qty
+                    </TableHead>
+                    <TableHead className="text-center font-semibold py-3 px-4 w-[25%]">
+                      New Qty
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -733,7 +775,9 @@ export default function OrderPopup({ order, onUpdate }) {
                           line.SalesItemLineDetail?.ItemRef?.name
                       ).map((line) => {
                         const itemName = line.SalesItemLineDetail.ItemRef.name;
-                        const originalQuantity = line.SalesItemLineDetail.Qty;
+                        const estimateQuantity = line.SalesItemLineDetail.Qty;
+                        const currentOrderQty =
+                          originalQuantities[itemName] || estimateQuantity;
 
                         return (
                           <TableRow key={line.Id} className="hover:bg-gray-50">
@@ -741,8 +785,13 @@ export default function OrderPopup({ order, onUpdate }) {
                               {itemName}
                             </TableCell>
                             <TableCell className="py-4 px-4 text-center">
+                              <span className="inline-flex items-center justify-center w-12 h-8 bg-blue-100 rounded text-sm font-medium text-blue-700">
+                                {estimateQuantity}
+                              </span>
+                            </TableCell>
+                            <TableCell className="py-4 px-4 text-center">
                               <span className="inline-flex items-center justify-center w-12 h-8 bg-gray-100 rounded text-sm font-medium text-gray-700">
-                                {originalQuantity}
+                                {currentOrderQty}
                               </span>
                             </TableCell>
                             <TableCell className="py-4 px-4">
@@ -792,7 +841,7 @@ export default function OrderPopup({ order, onUpdate }) {
                   onClick={printModifiedOrder}
                   className="px-6 text-white"
                 >
-                  Save & Print Order
+                  Save & Print Modified Order
                 </Button>
               </div>
             </div>
