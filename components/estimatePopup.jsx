@@ -23,7 +23,6 @@ import {
 import { Label } from "@radix-ui/react-label";
 import { Input } from "./ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Switch } from "@/components/ui/switch";
 import { Button } from "./ui/button";
 
 import { useEffect, useState } from "react";
@@ -36,9 +35,10 @@ export default function EstimatePopup({ estimate, onUpdate }) {
   const [term, setTerm] = useState("");
   const [fob, setFob] = useState("");
   const [itemDelivery, setItemDelivery] = useState({});
-  const [switchState, setSwitchState] = useState(
+  const [isAccepted, setIsAccepted] = useState(
     estimate.TxnStatus === "Accepted" || estimate.TxnStatus === "Converted"
   );
+  const [isUpdating, setIsUpdating] = useState(false);
   const itemQuantityOrdered = {};
   const [itemQuantities, setItemQuantities] = useState({});
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -234,6 +234,7 @@ export default function EstimatePopup({ estimate, onUpdate }) {
   };
 
   const acceptestimate = async () => {
+    setIsUpdating(true);
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/acceptestimate`,
@@ -246,15 +247,17 @@ export default function EstimatePopup({ estimate, onUpdate }) {
             SyncToken: estimate.SyncToken,
             Id: estimate.Id,
             estimateID: estimate.DocNumber,
-            status: !switchState,
+            status: !isAccepted,
           }),
         }
       );
       if (onUpdate) onUpdate();
       const data = await response.json();
-      setSwitchState(!switchState);
+      setIsAccepted(!isAccepted);
     } catch (error) {
       console.error("Error accepting estimate:", error);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -281,13 +284,33 @@ export default function EstimatePopup({ estimate, onUpdate }) {
               <TableCell className="">{estimate.CustomerRef.name}</TableCell>
               <TableCell className="">{estimate.TxnDate}</TableCell>
               <TableCell className="text-right">
-                <Switch
-                  checked={switchState}
-                  onCheckedChange={acceptestimate}
+                <Button
+                  variant={isAccepted ? "default" : "outline"}
+                  size="sm"
+                  disabled={isUpdating}
                   onClick={(e) => {
                     e.stopPropagation();
+                    acceptestimate();
                   }}
-                />
+                  className={`transition-all duration-200 ${
+                    isUpdating ? "animate-pulse" : ""
+                  } ${
+                    isAccepted 
+                      ? "bg-green-600 hover:bg-green-700 text-white border-green-600" 
+                      : "border-blue-500 text-blue-600 hover:bg-blue-50"
+                  }`}
+                >
+                  {isUpdating ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                      Updating...
+                    </div>
+                  ) : (
+                    <>
+                      {isAccepted ? "✓ Accepted" : "Accept"}
+                    </>
+                  )}
+                </Button>
               </TableCell>
             </TableRow>
           </DialogTrigger>
