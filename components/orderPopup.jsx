@@ -248,12 +248,15 @@ export default function OrderPopup({ order, onUpdate }) {
       // Close dialog immediately after successful save
       setIsDialogOpen(false);
 
-      // Call onUpdate after a brief delay to allow dialog to close smoothly
+      // Force immediate refresh of parent component
       if (onUpdate) {
-        setTimeout(() => onUpdate(), 100);
+        onUpdate();
       }
+
     } catch (error) {
       console.error("Error updating order:", error);
+      // Show user-friendly error message
+      alert("Failed to update order. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -401,13 +404,17 @@ export default function OrderPopup({ order, onUpdate }) {
       if (response.ok) {
         setIsModifyDialogOpen(false);
 
-        // Refresh parent component if onUpdate callback exists
-        if (onUpdate) onUpdate();
+        // Force immediate refresh of parent component
+        if (onUpdate) {
+          onUpdate();
+        }
       } else {
         console.error("Failed to save modified quantities");
+        alert("Failed to save quantities. Please try again.");
       }
     } catch (error) {
       console.error("Error saving modified quantities:", error);
+      alert("Failed to save quantities. Please try again.");
     }
   };
 

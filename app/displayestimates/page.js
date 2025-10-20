@@ -35,8 +35,6 @@ export default function Estimate() {
   const [estimates, setEstimates] = useState([]);
   const [orders, setOrders] = useState([]);
   const [invoices, setInvoices] = useState([]);
-  const [reload, setReload] = useState(false);
-  const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [openMonths, setOpenMonths] = useState(new Set());
@@ -139,127 +137,132 @@ export default function Estimate() {
     setOpenMonths(new Set([currentMonth]));
   }, []);
 
-  // Separate useEffect for each of the forms
-  useEffect(() => {
-    async function fetchOrders() {
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/orders`
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch orders");
-        }
-        const data = await response.json();
-        const ordersData = Array.isArray(data)
-          ? data
-          : Array.isArray(data?.data)
-          ? data.data
-          : [];
-
-        // Sort orders by order number in descending order
-        const sortedOrders = ordersData.sort((a, b) => {
-          const orderA = parseInt(a.order_number) || 0;
-          const orderB = parseInt(b.order_number) || 0;
-          return orderB - orderA; // Descending order (newest first)
-        });
-
-        setOrders(sortedOrders);
-      } catch (error) {
-        console.error("Error fetching orders:", error);
-        setOrders([]);
-      }
-    }
-
-    fetchOrders();
-  }, [reload, lastUpdate]);
-
-  useEffect(() => {
-    async function fetchInvoices() {
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/invoices`
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch invoices");
-        }
-
-        const data = await response.json();
-        const invoicesData = Array.isArray(data)
-          ? data
-          : Array.isArray(data?.data)
-          ? data.data
-          : [];
-        setInvoices(invoicesData);
-      } catch (error) {
-        console.error("Error fetching invoices:", error);
-        setInvoices([]);
-      }
-    }
-
-    fetchInvoices();
-  }, [reload, lastUpdate]);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const estimatesResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/estimates`
-        );
-        if (estimatesResponse.ok) {
-          const estimatesText = await estimatesResponse.text();
-
-          if (estimatesText) {
-            const estimatesData = JSON.parse(estimatesText);
-            setEstimates(estimatesData.data || []);
-          } else {
-            setEstimates([]);
-          }
+  // Individual fetch functions that can be called independently
+  const fetchEstimates = async () => {
+    try {
+      const estimatesResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/estimates`
+      );
+      if (estimatesResponse.ok) {
+        const estimatesText = await estimatesResponse.text();
+        if (estimatesText) {
+          const estimatesData = JSON.parse(estimatesText);
+          setEstimates(estimatesData.data || []);
         } else {
           setEstimates([]);
         }
-      } catch (error) {
-        console.error("Error fetching data:", error);
+      } else {
         setEstimates([]);
-        setOrders([]);
-        setInvoices([]);
       }
+    } catch (error) {
+      console.error("Error fetching estimates:", error);
+      setEstimates([]);
     }
-
-    fetchData();
-  }, [reload, lastUpdate]);
-
-  useEffect(() => {
-    async function fetchPurchaseOrders() {
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/purchaseorders`
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch purchase orders");
-        }
-        const data = await response.json();
-        const purchaseOrdersData = Array.isArray(data)
-          ? data
-          : Array.isArray(data?.data)
-          ? data.data
-          : [];
-        setPurchaseOrders(purchaseOrdersData);
-      } catch (error) {
-        console.error("Error fetching purchase orders:", error);
-        setPurchaseOrders([]);
-      }
-    }
-
-    fetchPurchaseOrders();
-  }, [reload, lastUpdate]);
-
-  const handleTabClick = () => {
-    setReload((prev) => !prev);
   };
 
-  const handleUpdate = () => {
-    setLastUpdate(Date.now());
-    setReload((prev) => !prev);
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch orders");
+      }
+      const data = await response.json();
+      const ordersData = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.data)
+        ? data.data
+        : [];
+
+      // Sort orders by order number in descending order
+      const sortedOrders = ordersData.sort((a, b) => {
+        const orderA = parseInt(a.order_number) || 0;
+        const orderB = parseInt(b.order_number) || 0;
+        return orderB - orderA; // Descending order (newest first)
+      });
+
+      setOrders(sortedOrders);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      setOrders([]);
+    }
+  };
+
+  const fetchInvoices = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/invoices`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch invoices");
+      }
+
+      const data = await response.json();
+      const invoicesData = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.data)
+        ? data.data
+        : [];
+      setInvoices(invoicesData);
+    } catch (error) {
+      console.error("Error fetching invoices:", error);
+      setInvoices([]);
+    }
+  };
+
+  const fetchPurchaseOrders = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/purchaseorders`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch purchase orders");
+      }
+      const data = await response.json();
+      const purchaseOrdersData = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.data)
+        ? data.data
+        : [];
+      setPurchaseOrders(purchaseOrdersData);
+    } catch (error) {
+      console.error("Error fetching purchase orders:", error);
+      setPurchaseOrders([]);
+    }
+  };
+
+  // Initial load - fetch all data once
+  useEffect(() => {
+    fetchEstimates();
+    fetchOrders();
+    fetchInvoices();
+    fetchPurchaseOrders();
+  }, []); // Only run once on mount
+
+  // Specific update handlers for each data type
+  const handleEstimateUpdate = () => {
+    fetchEstimates();
+  };
+
+  const handleOrderUpdate = () => {
+    fetchOrders();
+  };
+
+  const handleInvoiceUpdate = () => {
+    fetchInvoices();
+  };
+
+  const handlePurchaseOrderUpdate = () => {
+    fetchPurchaseOrders();
+  };
+
+  // Refresh all data (for manual refresh button)
+  const handleRefreshAll = () => {
+    fetchEstimates();
+    fetchOrders();
+    fetchInvoices();
+    fetchPurchaseOrders();
   };
 
   const filterEstimates = (estimates, searchTerm) => {
@@ -483,7 +486,7 @@ export default function Estimate() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setReload((prev) => !prev)}
+              onClick={handleRefreshAll}
               className="hidden sm:flex h-7 px-3 text-xs"
             >
               <RefreshCw className="w-3 h-3 mr-1" />
@@ -532,7 +535,6 @@ export default function Estimate() {
                   <TabsTrigger
                     key={tab.value}
                     value={tab.value}
-                    onClick={handleTabClick}
                     className="flex items-center justify-between data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-blue-200 py-2 px-3 text-sm font-medium rounded transition-all duration-200 hover:bg-slate-50"
                   >
                     <div className="flex items-center space-x-1.5">
@@ -624,7 +626,7 @@ export default function Estimate() {
                                 <EstimatePopup
                                   estimate={estimate}
                                   key={estimate.Id}
-                                  onUpdate={handleUpdate}
+                                  onUpdate={handleEstimateUpdate}
                                 />
                               )),
                             }}
@@ -707,7 +709,7 @@ export default function Estimate() {
                                   key={`${order.order_number || "no-order"}-${
                                     order.quotation_number || "no-quote"
                                   }-${order.id || Math.random()}`}
-                                  onUpdate={handleUpdate}
+                                  onUpdate={handleOrderUpdate}
                                 />
                               )),
                             }}
@@ -788,7 +790,7 @@ export default function Estimate() {
                                 <PurchaseOrderPopup
                                   purchaseOrder={po}
                                   key={po.DocNumber || index}
-                                  onUpdate={handleUpdate}
+                                  onUpdate={handlePurchaseOrderUpdate}
                                 />
                               )),
                             }}
@@ -871,7 +873,7 @@ export default function Estimate() {
                                   invoice={invoice}
                                   key={index}
                                   index={index}
-                                  onUpdate={handleUpdate}
+                                  onUpdate={handleInvoiceUpdate}
                                 />
                               )),
                             }}
