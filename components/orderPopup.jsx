@@ -477,6 +477,196 @@ export default function OrderPopup({ order, onUpdate }) {
     }
   };
 
+  const downloadOrderPdf = async () => {
+    const finalShippingMethod =
+      shippingMethod === "other" ? customShippingText : shippingMethod;
+
+    try {
+      await updateDatabase();
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orderPdf`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            orderNumber,
+            customerPO,
+            shippingMethod: finalShippingMethod,
+            billingType,
+            comments,
+            quotationNumber,
+            dateOrdered,
+            order,
+            ship_to: shipTo,
+            // Don't pass modifiedQuantities - backend will use original_quantity from database
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`PDF generation failed: ${response.status}`);
+      }
+
+      // Try using arrayBuffer instead of blob
+      const arrayBuffer = await response.arrayBuffer();
+      console.log('Order PDF ArrayBuffer size:', arrayBuffer.byteLength);
+      
+      // Create blob from arrayBuffer
+      const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+      console.log('Order PDF Blob size:', blob.size);
+      console.log('Order PDF Blob type:', blob.type);
+      
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `order-${orderNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error generating order PDF:", error);
+      alert("Failed to generate order PDF. Please try again.");
+    }
+  };
+
+  const downloadOriginalOrderPdf = async () => {
+    const finalShippingMethod =
+      shippingMethod === "other" ? customShippingText : shippingMethod;
+
+    try {
+      await updateDatabase();
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orderPdf`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            orderNumber,
+            customerPO,
+            shippingMethod: finalShippingMethod,
+            billingType,
+            comments,
+            quotationNumber,
+            dateOrdered,
+            order,
+            ship_to: shipTo,
+            useOriginalQuantities: true, // Signal backend to use original_quantity
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`PDF generation failed: ${response.status}`);
+      }
+
+      // Try using arrayBuffer instead of blob
+      const arrayBuffer = await response.arrayBuffer();
+      console.log('Original Order PDF ArrayBuffer size:', arrayBuffer.byteLength);
+      
+      // Create blob from arrayBuffer
+      const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+      console.log('Original Order PDF Blob size:', blob.size);
+      console.log('Original Order PDF Blob type:', blob.type);
+      
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `order-original-${orderNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error generating original order PDF:", error);
+      alert("Failed to generate original order PDF. Please try again.");
+    }
+  };
+
+  const downloadModifiedOrderPdf = async () => {
+    const finalShippingMethod =
+      shippingMethod === "other" ? customShippingText : shippingMethod;
+
+    try {
+      // First, save the modified quantities to the database
+      const saveResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/updateQuotePartQuantities`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            quotationNumber,
+            modifiedQuantities: itemQuantities,
+          }),
+        }
+      );
+
+      if (!saveResponse.ok) {
+        console.error("Failed to save modified quantities");
+      }
+
+      // Then generate and download the PDF
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orderPdf`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            orderNumber,
+            customerPO,
+            shippingMethod: finalShippingMethod,
+            billingType,
+            comments,
+            quotationNumber,
+            dateOrdered,
+            order,
+            ship_to: shipTo,
+            modifiedQuantities: itemQuantities, // Include modified quantities
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`PDF generation failed: ${response.status}`);
+      }
+
+      // Try using arrayBuffer instead of blob
+      const arrayBuffer = await response.arrayBuffer();
+      console.log('Modified Order PDF ArrayBuffer size:', arrayBuffer.byteLength);
+      
+      // Create blob from arrayBuffer
+      const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+      console.log('Modified Order PDF Blob size:', blob.size);
+      console.log('Modified Order PDF Blob type:', blob.type);
+      
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `order-modified-${orderNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      // Refresh parent component if onUpdate callback exists
+      if (onUpdate) onUpdate();
+    } catch (error) {
+      console.error("Error generating modified order PDF:", error);
+      alert("Failed to generate modified order PDF. Please try again.");
+    }
+  };
+
   return (
     <>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -724,6 +914,13 @@ export default function OrderPopup({ order, onUpdate }) {
             >
               {isSaving ? "Saving..." : "Print Original Order"}
             </Button>
+            <Button 
+              onClick={downloadOriginalOrderPdf}
+              disabled={isSaving}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Print Original PDF
+            </Button>
             <Button onClick={printPackingSlip} disabled={isSaving}>
               Print Packing Slip
             </Button>
@@ -849,6 +1046,12 @@ export default function OrderPopup({ order, onUpdate }) {
                   className="px-6 text-white"
                 >
                   Save & Print Modified Order
+                </Button>
+                <Button
+                  onClick={downloadModifiedOrderPdf}
+                  className="px-6 bg-red-600 hover:bg-red-700 text-white"
+                >
+                  Save & Print Modified PDF
                 </Button>
               </div>
             </div>

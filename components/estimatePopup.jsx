@@ -27,7 +27,7 @@ import { Button } from "./ui/button";
 
 import { useEffect, useState } from "react";
 
-export default function EstimatePopup({ estimate, onUpdate }) {
+export default function EstimatePopup({ estimate, onUpdate, onOrderUpdate }) {
   const [enquiryRef, setEnquiryRef] = useState("");
   const [product, setProduct] = useState("");
   const [serial, setSerial] = useState("");
@@ -39,6 +39,7 @@ export default function EstimatePopup({ estimate, onUpdate }) {
     estimate.TxnStatus === "Accepted" || estimate.TxnStatus === "Converted"
   );
   const [isUpdating, setIsUpdating] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const itemQuantityOrdered = {};
   const [itemQuantities, setItemQuantities] = useState({});
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -214,6 +215,58 @@ export default function EstimatePopup({ estimate, onUpdate }) {
     }
   };
 
+  const downloadPdf = async () => {
+    try {
+      await saveData();
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/estimatePdf`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            estimateID: estimate.DocNumber,
+            enquiryRef,
+            product,
+            serial,
+            model,
+            term,
+            itemDelivery,
+            fob,
+            itemQuantities,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`PDF generation failed: ${response.status}`);
+      }
+
+      // Try using arrayBuffer instead of blob
+      const arrayBuffer = await response.arrayBuffer();
+      console.log('ArrayBuffer size:', arrayBuffer.byteLength);
+      
+      // Create blob from arrayBuffer
+      const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+      console.log('Blob size:', blob.size);
+      console.log('Blob type:', blob.type);
+      
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `estimate-${estimate.DocNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert("Failed to generate PDF. Please try again.");
+    }
+  };
+
   const openHtmlInNewTab = (htmlContent) => {
     const newWindow = window.open("");
     newWindow.document.write(htmlContent);
@@ -234,7 +287,11 @@ export default function EstimatePopup({ estimate, onUpdate }) {
   };
 
   const acceptestimate = async () => {
+    // Prevent multiple simultaneous requests
+    if (isUpdating) return;
+    
     setIsUpdating(true);
+    setErrorMessage(""); // Clear previous errors
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/acceptestimate`,
@@ -251,7 +308,7 @@ export default function EstimatePopup({ estimate, onUpdate }) {
           }),
         }
       );
-      if (onUpdate) onUpdate();
+
       const data = await response.json();
       setIsAccepted(!isAccepted);
     } catch (error) {
@@ -284,33 +341,44 @@ export default function EstimatePopup({ estimate, onUpdate }) {
               <TableCell className="">{estimate.CustomerRef.name}</TableCell>
               <TableCell className="">{estimate.TxnDate}</TableCell>
               <TableCell className="text-right">
-                <Button
-                  variant={isAccepted ? "default" : "outline"}
-                  size="sm"
-                  disabled={isUpdating}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    acceptestimate();
-                  }}
-                  className={`transition-all duration-200 ${
-                    isUpdating ? "animate-pulse" : ""
-                  } ${
-                    isAccepted 
-                      ? "bg-green-600 hover:bg-green-700 text-white border-green-600" 
-                      : "border-blue-500 text-blue-600 hover:bg-blue-50"
-                  }`}
-                >
-                  {isUpdating ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                      Updating...
+                <div className="flex flex-col items-end gap-1">
+                  <Button
+                    variant={errorMessage ? "destructive" : isAccepted ? "default" : "outline"}
+                    size="sm"
+                    disabled={isUpdating}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      acceptestimate();
+                    }}
+                    className={`transition-all duration-200 ${
+                      isUpdating ? "animate-pulse" : ""
+                    } ${
+                      errorMessage 
+                        ? "bg-red-600 hover:bg-red-700 text-white border-red-600"
+                        : isAccepted
+                        ? "bg-green-600 hover:bg-green-700 text-white border-green-600" 
+                        : "border-blue-500 text-blue-600 hover:bg-blue-50"
+                    }`}
+                  >
+                    {isUpdating ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                        {!isAccepted ? "Accepting..." : "Reverting..."}
+                      </div>
+                    ) : errorMessage ? (
+                      "Error - Try Again"
+                    ) : (
+                      <>
+                        {isAccepted ? "✓ Accepted" : "Accept"}
+                      </>
+                    )}
+                  </Button>
+                  {errorMessage && (
+                    <div className="text-xs text-red-600 max-w-32 text-right break-words">
+                      {errorMessage.length > 40 ? errorMessage.substring(0, 40) + "..." : errorMessage}
                     </div>
-                  ) : (
-                    <>
-                      {isAccepted ? "✓ Accepted" : "Accept"}
-                    </>
                   )}
-                </Button>
+                </div>
               </TableCell>
             </TableRow>
           </DialogTrigger>
@@ -480,6 +548,12 @@ export default function EstimatePopup({ estimate, onUpdate }) {
                   Save and Print
                 </Button>
               </DialogClose>
+              <Button 
+                onClick={downloadPdf}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                Print PDF
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

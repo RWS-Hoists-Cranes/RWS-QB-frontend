@@ -317,7 +317,7 @@ export default function Estimate() {
     return invoices.filter((invoice) => {
       const searchLower = searchTerm.toLowerCase();
       return (
-        invoice.invoice.invoice_number
+        invoice.invoice?.invoice_number
           ?.toString()
           .toLowerCase()
           .includes(searchLower) ||
@@ -627,6 +627,7 @@ export default function Estimate() {
                                   estimate={estimate}
                                   key={estimate.Id}
                                   onUpdate={handleEstimateUpdate}
+                                  onOrderUpdate={handleOrderUpdate}
                                 />
                               )),
                             }}
