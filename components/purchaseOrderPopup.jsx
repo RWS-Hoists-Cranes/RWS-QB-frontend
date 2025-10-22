@@ -216,6 +216,66 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
     checkReady();
   };
 
+  const downloadPurchaseOrderPdf = async () => {
+    await updateDatabase();
+
+    const finalShippingMethod =
+      shippingMethod === "other" ? customShippingText : shippingMethod;
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/purchaseOrderPdf`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            poNumber,
+            orderNumber,
+            vendorName,
+            shippingMethod: finalShippingMethod,
+            comments,
+            dateOrdered,
+            purchaseOrder,
+            billingType,
+            isFreight,
+            ship_from: shipFrom,
+            ship_to: shipTo,
+            dimensions: dimensions,
+            pickupDate: pickupDate,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`PDF generation failed: ${response.status}`);
+      }
+
+      // Try using arrayBuffer instead of blob
+      const arrayBuffer = await response.arrayBuffer();
+      console.log('Purchase Order PDF ArrayBuffer size:', arrayBuffer.byteLength);
+      
+      // Create blob from arrayBuffer
+      const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+      console.log('Purchase Order PDF Blob size:', blob.size);
+      console.log('Purchase Order PDF Blob type:', blob.type);
+      
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `purchase-order-${poNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error generating purchase order PDF:", error);
+      alert("Failed to generate purchase order PDF. Please try again.");
+    }
+  };
+
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} key={poNumber}>
       <DialogTrigger asChild>
@@ -258,6 +318,14 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
                   }}
                 >
                   Print Purchase Order
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    downloadPurchaseOrderPdf();
+                  }}
+                >
+                  Print Purchase Order PDF
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -527,25 +595,39 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
             </div>
           )}
         </div>
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={async () => {
-              await updateDatabase();
-              setIsDialogOpen(false);
-            }}
-          >
-            Save and Close
-          </Button>
-          <Button
-            type="submit"
-            onClick={async () => {
-              await displayPurchaseOrderHTML();
-              setIsDialogOpen(false);
-            }}
-          >
-            Save and Print
-          </Button>
+        <DialogFooter className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+          {/* Save Actions */}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={async () => {
+                await updateDatabase();
+                setIsDialogOpen(false);
+              }}
+              className="flex-1 sm:flex-none"
+            >
+              Save and Close
+            </Button>
+          </div>
+          
+          {/* Print Actions */}
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={async () => {
+                await displayPurchaseOrderHTML();
+                setIsDialogOpen(false);
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Print Purchase Order
+            </Button>
+            <Button 
+              onClick={downloadPurchaseOrderPdf}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              Print PDF
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

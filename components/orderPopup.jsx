@@ -899,42 +899,55 @@ export default function OrderPopup({ order, onUpdate }) {
             </div>
           </div>
 
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={updateDatabase}
-              disabled={isSaving}
-            >
-              {isSaving ? "Saving..." : "Save and Close"}
-            </Button>
-            <Button
-              type="submit"
-              onClick={printOriginalOrder}
-              disabled={isSaving}
-            >
-              {isSaving ? "Saving..." : "Print Original Order"}
-            </Button>
-            <Button 
-              onClick={downloadOriginalOrderPdf}
-              disabled={isSaving}
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
-              Print Original PDF
-            </Button>
-            <Button onClick={printPackingSlip} disabled={isSaving}>
-              Print Packing Slip
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setIsModifyDialogOpen(true);
-              }}
-              disabled={isSaving}
-            >
-              Modify Original Form
-            </Button>
+          <DialogFooter className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+            {/* Save Actions */}
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={updateDatabase}
+                disabled={isSaving}
+                className="flex-1 sm:flex-none"
+              >
+                {isSaving ? "Saving..." : "Save and Close"}
+              </Button>
+            </div>
+            
+            {/* Print & Modify Actions */}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                onClick={printOriginalOrder}
+                disabled={isSaving}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {isSaving ? "Saving..." : "Print Order"}
+              </Button>
+              <Button 
+                onClick={downloadOriginalOrderPdf}
+                disabled={isSaving}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                Print PDF
+              </Button>
+              <Button 
+                onClick={printPackingSlip} 
+                disabled={isSaving}
+                variant="outline"
+              >
+                Print Packing Slip
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsModifyDialogOpen(true);
+                }}
+                disabled={isSaving}
+                className="bg-purple-600 hover:bg-purple-700 text-white"
+              >
+                Modify Form
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1024,35 +1037,43 @@ export default function OrderPopup({ order, onUpdate }) {
           </div>
 
           <DialogFooter className="pt-4 border-t bg-gray-50 mx-[-24px] px-6 pb-6 shrink-0">
-            <div className="flex justify-between items-center w-full">
+            <div className="flex flex-col gap-4 w-full">
               <p className="text-xs text-gray-500">
                 Quantities will be saved permanently and used for invoicing
               </p>
-              <div className="flex space-x-3">
-                <DialogClose asChild>
-                  <Button variant="outline" className="px-6">
-                    Cancel
+              
+              <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+                {/* Cancel & Save Actions */}
+                <div className="flex gap-2">
+                  <DialogClose asChild>
+                    <Button variant="outline" className="flex-1 sm:flex-none">
+                      Cancel
+                    </Button>
+                  </DialogClose>
+                  <Button
+                    variant="secondary"
+                    onClick={saveModifiedQuantities}
+                    className="flex-1 sm:flex-none"
+                  >
+                    Save Quantities
                   </Button>
-                </DialogClose>
-                <Button
-                  variant="secondary"
-                  onClick={saveModifiedQuantities}
-                  className="px-6"
-                >
-                  Save Quantities
-                </Button>
-                <Button
-                  onClick={printModifiedOrder}
-                  className="px-6 text-white"
-                >
-                  Save & Print Modified Order
-                </Button>
-                <Button
-                  onClick={downloadModifiedOrderPdf}
-                  className="px-6 bg-red-600 hover:bg-red-700 text-white"
-                >
-                  Save & Print Modified PDF
-                </Button>
+                </div>
+                
+                {/* Print Actions */}
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    onClick={printModifiedOrder}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    Save & Print Modified
+                  </Button>
+                  <Button
+                    onClick={downloadModifiedOrderPdf}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    Save & Print PDF
+                  </Button>
+                </div>
               </div>
             </div>
           </DialogFooter>

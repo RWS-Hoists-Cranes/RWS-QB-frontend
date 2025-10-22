@@ -142,6 +142,41 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
     }
   };
 
+  const fetchPdf = async () => {
+    try {
+      await saveData();
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/invoicePdf`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            invoice: invoice,
+            gst: gst,
+            customer_po: customerPO,
+            comments: comments,
+            dateOrdered: invoice.order?.date_ordered,
+            shippingDate: shippingDate || invoice.order?.date_ordered,
+          }),
+        }
+      );
+      const pdfBlob = await response.blob();
+      const url = window.URL.createObjectURL(pdfBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `invoice-${invoice.DocNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error fetching PDF:", error);
+    }
+  };
+
+
   const fetchBackOrderHtml = async () => {
     try {
       await saveData();
@@ -301,22 +336,40 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
             />
           </div>
         </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline" onClick={saveData}>
-              Save and Close
-            </Button>
-          </DialogClose>
-          <DialogClose asChild>
-            <Button type="submit" onClick={fetchHtmlContent}>
-              Save and Print Invoice
-            </Button>
-          </DialogClose>
-          <DialogClose asChild>
-            <Button variant="outline" onClick={fetchBackOrderHtml}>
-              Print Back Order
-            </Button>
-          </DialogClose>
+        <DialogFooter className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+          {/* Save Actions */}
+          <div className="flex gap-2">
+            <DialogClose asChild>
+              <Button variant="outline" onClick={saveData} className="flex-1 sm:flex-none">
+                Save and Close
+              </Button>
+            </DialogClose>
+          </div>
+          
+          {/* Print Actions */}
+          <div className="flex flex-wrap gap-2">
+            <DialogClose asChild>
+              <Button 
+                onClick={fetchHtmlContent}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Print Invoice
+              </Button>
+            </DialogClose>
+            <DialogClose asChild>
+              <Button 
+                onClick={fetchPdf}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                Print PDF
+              </Button>
+            </DialogClose>
+            <DialogClose asChild>
+              <Button variant="outline" onClick={fetchBackOrderHtml}>
+                Print Back Order
+              </Button>
+            </DialogClose>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

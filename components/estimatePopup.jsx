@@ -537,23 +537,33 @@ export default function EstimatePopup({ estimate, onUpdate, onOrderUpdate }) {
               </TableBody>
               <TableFooter></TableFooter>
             </Table>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="outline" onClick={saveData}>
-                  Save and Close
+            <DialogFooter className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+              {/* Save Actions */}
+              <div className="flex gap-2">
+                <DialogClose asChild>
+                  <Button variant="outline" onClick={saveData} className="flex-1 sm:flex-none">
+                    Save and Close
+                  </Button>
+                </DialogClose>
+              </div>
+              
+              {/* Print Actions */}
+              <div className="flex flex-wrap gap-2">
+                <DialogClose asChild>
+                  <Button 
+                    onClick={fetchHtmlContent}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    Print Estimate
+                  </Button>
+                </DialogClose>
+                <Button 
+                  onClick={downloadPdf}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  Print PDF
                 </Button>
-              </DialogClose>
-              <DialogClose asChild>
-                <Button type="submit" onClick={fetchHtmlContent}>
-                  Save and Print
-                </Button>
-              </DialogClose>
-              <Button 
-                onClick={downloadPdf}
-                className="bg-red-600 hover:bg-red-700 text-white"
-              >
-                Print PDF
-              </Button>
+              </div>
             </DialogFooter>
           </DialogContent>
         </Dialog>
