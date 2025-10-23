@@ -621,11 +621,11 @@ export default function PurchaseOrderPopup({ purchaseOrder, onUpdate }) {
             >
               Print Purchase Order
             </Button>
-            <Button 
+            <Button
               onClick={downloadPurchaseOrderPdf}
               className="bg-green-600 hover:bg-green-700 text-white"
             >
-              Print PDF
+              Download PDF
             </Button>
           </div>
         </DialogFooter>

@@ -361,7 +361,7 @@ export default function InvoicePopup({ invoice, index, onUpdate }) {
                 onClick={fetchPdf}
                 className="bg-green-600 hover:bg-green-700 text-white"
               >
-                Print PDF
+                Download PDF
               </Button>
             </DialogClose>
             <DialogClose asChild>

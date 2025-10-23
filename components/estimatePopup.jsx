@@ -561,7 +561,7 @@ export default function EstimatePopup({ estimate, onUpdate, onOrderUpdate }) {
                   onClick={downloadPdf}
                   className="bg-green-600 hover:bg-green-700 text-white"
                 >
-                  Print PDF
+                  Download PDF
                 </Button>
               </div>
             </DialogFooter>

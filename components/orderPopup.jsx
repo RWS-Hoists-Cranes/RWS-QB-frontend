@@ -926,7 +926,7 @@ export default function OrderPopup({ order, onUpdate }) {
                 disabled={isSaving}
                 className="bg-green-600 hover:bg-green-700 text-white"
               >
-                Print PDF
+                Download PDF
               </Button>
               <Button 
                 onClick={printPackingSlip} 
@@ -1071,7 +1071,7 @@ export default function OrderPopup({ order, onUpdate }) {
                     onClick={downloadModifiedOrderPdf}
                     className="bg-green-600 hover:bg-green-700 text-white"
                   >
-                    Save & Print PDF
+                    Download PDF
                   </Button>
                 </div>
               </div>
